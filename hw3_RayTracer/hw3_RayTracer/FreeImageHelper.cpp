@@ -1,12 +1,11 @@
 #include "FreeImageHelper.h"
 
 FreeImageHelper::FreeImageHelper(BYTE* pixels, int width, int height) {
-	img = FreeImage_ConvertFromRawBits(pixels, width, height, width * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, true);
+	img = FreeImage_ConvertFromRawBits(pixels, width, height, width * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
 }
 
 FreeImageHelper::~FreeImageHelper() {
 	FreeImage_DeInitialise();
-	free(img); // WTF? :D
 }
 
 void FreeImageHelper::save(string withName) {

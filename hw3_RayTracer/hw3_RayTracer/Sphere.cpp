@@ -16,7 +16,7 @@ double Sphere::intersectionDistance(Ray ray) {
 	double r = radius;
 
 	double a = dot(P1, P1);
-	double b = dot(P1, (P0 - C));
+	double b = 2 * dot(P1, (P0 - C));
 	double c = dot((P0 - C), (P0 - C)) - r * r;
 
 	double disc = b * b - 4 * a * c;
@@ -28,8 +28,8 @@ double Sphere::intersectionDistance(Ray ray) {
 	}
 	else {
 		// two roots, pick closest to the ray origin
-		double t1 = (-b + disc) / (2 * a);
-		double t2 = (-b - disc) / (2 * a);
+		double t1 = (-b + pow(disc, 0.5)) / (2 * a);
+		double t2 = (-b - pow(disc, 0.5)) / (2 * a);
 		return min(t1, t2);
 	}
 	// consider cases when one root is negative - that means that the camera is inside the sphere

@@ -58,7 +58,6 @@ mat4 Transform::lookAt(const vec3 &eye, const vec3 &center, const vec3 &up)
 	vec3 u = leftVector;
 	vec3 v = glm::cross(w, u);
 
-	mat3 R = glm::transpose(mat3(w, u, v));
 	mat4 translation = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -eye.x, -eye.y, -eye.z, 1);
 	mat4 rotation = mat4(u.x, v.x, w.x, 0, u.y, v.y, w.y, 0, u.z, v.z, w.z, 0, 0, 0, 0, 1);
 	return rotation * translation;
