@@ -26,3 +26,7 @@ vec3 Camera::getCenter() const {
 mat4 Camera::lookAtTransformMatrix() const {
 	return Transform::lookAt(eye, center, up);
 }
+
+vec3 Camera::getDirection() const {
+	return eye - center;
+}

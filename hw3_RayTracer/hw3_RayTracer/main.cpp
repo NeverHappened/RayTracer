@@ -30,17 +30,32 @@ Camera initCamera() {
 }
 
 Perspective initPerspective() {
-	int w = 600, h = 400; // width and height 
-	float fovy = 90.0; // For field of view
+	int w = 600, h = 400; 
+	float fovy = 90.0;
+	float fovx = 90.0;
 	float aspect = w / (float)h;
 	float zNear = 0.1;
 	float zFar = 99.0;
 
-	return Perspective(w, h, fovy, zNear, zFar);
+	return Perspective(w, h, fovy, fovx, zNear, zFar);
 }
 
 Ray findRayForPixel(Camera camera, Perspective perspective, int i, int j) {
-	return Ray(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0)); // TODO
+
+	vec3 rayStart = camera.getEye();
+
+	vec3 w = camera.getDirection();
+	vec3 v = Transform::upvector(camera.getUp(), camera.getDirection());
+	vec3 u = normalize(cross(v, w));
+
+	double alpha = tan(radians(perspective.getFovx() / 2)) * 
+		((j - perspective.getW() / 2.0f) / (perspective.getW() / 2.0f));
+	double beta = tan(radians(perspective.getFovy() / 2)) *
+		((perspective.getH() / 2.0f - i) / perspective.getH() / 2.0f);
+	vec3 _rayDirection = vec3(alpha, alpha, alpha) * u + vec3(beta, beta, beta) * v + w;
+	vec3 rayDirection = normalize(_rayDirection);
+
+	return Ray(rayStart, rayDirection);
 }
 
 void main() {
@@ -71,7 +86,6 @@ void main() {
 	BYTE* pixels = new BYTE[PIXELS_SIZE];
 	for (int i = 0; i < perspective.getH(); i++) { // j is a row
 		for (int j = 0; j < perspective.getW(); j++) {
-
 			Ray ray = findRayForPixel(camera, perspective, i, j);
 		}
 	}

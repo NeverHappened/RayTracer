@@ -16,6 +16,7 @@ public:
 	vec3 getEye() const;
 	vec3 getUp() const;
 	vec3 getCenter() const;
+	vec3 getDirection() const;
 
 	mat4 lookAtTransformMatrix() const;
 };

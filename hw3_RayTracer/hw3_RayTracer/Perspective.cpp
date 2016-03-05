@@ -1,7 +1,7 @@
 #include "Perspective.h"
 
-Perspective::Perspective(int w, int h, float fovy, float zNear, float zFar) :
-	w(w), h(h), fovy(fovy), aspect(w / (float) h), zNear(zNear), zFar(zFar)
+Perspective::Perspective(int w, int h, float fovy, float fovx, float zNear, float zFar) :
+	w(w), h(h), fovy(fovy), fovx(fovx), aspect(w / (float) h), zNear(zNear), zFar(zFar)
 {}
 
 Perspective::~Perspective()
@@ -15,6 +15,9 @@ int Perspective::getH() {
 }
 float Perspective::getFovy() {
 	return fovy;
+}
+float Perspective::getFovx() {
+	return fovx;
 }
 float Perspective::getAspect() {
 	return aspect;
