@@ -12,13 +12,12 @@
 using namespace std;
 using namespace glm;
 
-vector<GameObject> createObjects() {
-	vector<GameObject> res;
+vector<GameObject*> createObjects() {
+	vector<GameObject*> res;
 
-	Sphere s(vec3(0, 0, -1), 0.5);
+	Sphere* s = new Sphere(vec3(0, 0, -1), 0.5);
 
 	res.push_back(s);
-
 	return res;
 }
 
@@ -41,7 +40,7 @@ Perspective initPerspective() {
 }
 
 Ray findRayForPixel(Camera camera, Perspective perspective, int i, int j) {
-
+	return Ray(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0)); // TODO
 }
 
 void main() {
@@ -63,7 +62,7 @@ void main() {
 	// 10) output pixel array in file
 	// 11) watch render!!!
 
-	vector<GameObject> objects = createObjects();
+	vector<GameObject*> objects = createObjects();
 	Camera camera = initCamera();
 	Perspective perspective = initPerspective();
 

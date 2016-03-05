@@ -5,30 +5,24 @@
 
 using namespace glm;
 
-class Camera {
-private:
-	vec3 eye;
-	vec3 up;
-	vec3 center;
-public:
-	Camera(vec3 eye, vec3 up, vec3 center) : eye(eye), up(up), center(center)
-	{}
-	~Camera()
-	{}
+Camera::Camera(vec3 eye, vec3 up, vec3 center) : eye(eye), up(up), center(center)
+{}
 
-	vec3 getEye() const {
-		return eye;
-	}
+Camera::~Camera()
+{}
 
-	vec3 getUp() const {
-		return up;
-	}
+vec3 Camera::getEye() const {
+	return eye;
+}
 
-	vec3 getCenter() const {
-		return center;
-	}
+vec3 Camera::getUp() const {
+	return up;
+}
 
-	mat4 lookAtTransformMatrix() const {
-		return Transform::lookAt(eye, center, up);
-	}
-};
+vec3 Camera::getCenter() const {
+	return center;
+}
+
+mat4 Camera::lookAtTransformMatrix() const {
+	return Transform::lookAt(eye, center, up);
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "include/FreeImage.h"
+#include <string>
 
 using namespace std;
 
@@ -8,8 +9,8 @@ class FreeImageHelper {
 private:
 	FIBITMAP* img;
 public:
-	FreeImageHelper(int width, int height);
+	FreeImageHelper(BYTE* pixels, int width, int height);
 	~FreeImageHelper();
 
-	void save();
+	void save(string withName);
 };

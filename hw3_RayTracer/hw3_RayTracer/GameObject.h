@@ -4,5 +4,5 @@
 
 class GameObject {
 public:
-	virtual bool intersects(Ray ray);
+	virtual bool intersects(Ray ray) = 0;
 };
