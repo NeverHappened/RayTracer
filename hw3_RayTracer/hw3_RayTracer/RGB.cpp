@@ -3,7 +3,7 @@
 
 using namespace glm;
 
-RGB::RGB(BYTE r, BYTE g, BYTE b) : r(b), g(g), b(r) 
+RGB::RGB(BYTE r, BYTE g, BYTE b) : r(r), g(g), b(b) 
 {}
 
 RGB::RGB(vec3 color) : r(color.x), g(color.y), b(color.z)

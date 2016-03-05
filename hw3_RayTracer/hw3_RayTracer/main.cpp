@@ -16,7 +16,7 @@ using namespace glm;
 vector<GameObject*> createObjects() {
 	vector<GameObject*> res;
 
-	Sphere* s = new Sphere(vec3(0.0f, 0.0f, 0.0f), 1, vec3(255, 255, 25));
+	Sphere* s = new Sphere(vec3(0.0f, 0.0f, 0.0f), 1, vec3(255, 0, 0));
 
 	res.push_back(s);
 	return res;
@@ -31,10 +31,11 @@ Camera initCamera() {
 }
 
 Perspective initPerspective() {
-	int w = 600, h = 400; 
+	int w = 400, h = 400;
 	float aspect = w / (float)h;
-	float fovx = 90.0 / aspect;
-	float fovy = 90.0;
+	float fovx = 90.0;
+	float fovy = fovx / aspect;
+
 	float zNear = 0.1;
 	float zFar = 99.0;
 
@@ -50,10 +51,20 @@ Ray findRayForPixel(Camera camera, Perspective perspective, int i, int j) {
 	vec3 u = normalize(cross(camera.getUp(), w));
 	vec3 v = normalize(cross(w, u));
 
-	double alpha = tan(radians(perspective.getFovx() / 2)) * 
-		((j - perspective.getW() / 2.0f) / (perspective.getW() / 2.0f));
-	double beta = tan(radians(perspective.getFovy() / 2)) *
-		((perspective.getH() / 2.0f - i) / perspective.getH() / 2.0f);
+	double pixelCenterI = i + 0.5f;
+	double pixelCenterJ = j + 0.5f;
+
+	double tanX = tan(radians(perspective.getFovx() / 2));
+	double tanY = tan(radians(perspective.getFovy() / 2));
+
+	double widthCenter = perspective.getW() / 2.0f;
+	double heightCenter = perspective.getH() / 2.0f;
+
+	double normalizedXLocation = ((pixelCenterI - widthCenter) / widthCenter);
+	double normalizedYLocation = ((heightCenter - pixelCenterJ) / heightCenter);
+
+	double alpha = tanX * normalizedXLocation;
+	double beta = tanY * normalizedYLocation;
 	vec3 _rayDirection = vec3(alpha, alpha, alpha) * u + vec3(beta, beta, beta) * v - w;
 	vec3 rayDirection = normalize(_rayDirection);
 
@@ -62,9 +73,9 @@ Ray findRayForPixel(Camera camera, Perspective perspective, int i, int j) {
 
 void fill(BYTE* pixels, int width, int height, int i, int j, RGB color) {
 	const int OFFSET = (i * width + j) * 3;
-	pixels[OFFSET] = color.getR();
+	pixels[OFFSET] = color.getB();
 	pixels[OFFSET + 1] = color.getG();
-	pixels[OFFSET + 2] = color.getB();
+	pixels[OFFSET + 2] = color.getR();
 }
 
 GameObject* findClosestIntersection(Ray ray, vector<GameObject*> objects) {
@@ -96,7 +107,6 @@ RGB findColor(GameObject* obj) {
 }
 
 void rayTracer() {
-	cout << "Hi, dima :)" << endl;
 	// OK THATS A START, BUT
 	// need to describe high-level algorithm of ray tracer
 
@@ -121,7 +131,7 @@ void rayTracer() {
 	const int BYTES_PER_PIXEL = 3;
 	const int PIXELS_SIZE = perspective.getW() * perspective.getH() * BYTES_PER_PIXEL;
 	BYTE* pixels = new BYTE[PIXELS_SIZE];
-	for (int i = 0; i < perspective.getH(); i++) { // j is a row
+	for (int i = 0; i < perspective.getH(); i++) {
 		for (int j = 0; j < perspective.getW(); j++) {
 			Ray ray = findRayForPixel(camera, perspective, i, j);
 			GameObject* closestObject = findClosestIntersection(ray, objects);
@@ -137,7 +147,7 @@ void rayTracer() {
 
 void test() {
 	Ray ray(vec3(0.0f, 0.0f, 5.0f), vec3(0.0f, 0.0f, -1.0f));
-	Sphere sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, vec3(255, 0, 0));
+	Sphere sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, vec3(255, 255, 0));
 
 	cout << "intersection distance???:: " << sphere.intersectionDistance(ray) << endl;
 }
