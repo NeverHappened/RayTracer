@@ -10,6 +10,7 @@
 #include "Perspective.h"
 #include "RGB.h"
 #include "Sampler.h"
+#include "ImageToRender.h"
 
 using namespace std;
 using namespace glm;
@@ -70,13 +71,6 @@ Ray findRayForPixel(Camera camera, Perspective perspective, PixelSample sample) 
 	return Ray(rayStart, rayDirection);
 }
 
-void fill(BYTE* pixels, int width, int height, PixelSample sample, RGB color) {
-	const int OFFSET = (sample.rowPixel() * width + sample.columnPixel()) * 3;
-	pixels[OFFSET] = color.getB();
-	pixels[OFFSET + 1] = color.getG();
-	pixels[OFFSET + 2] = color.getR();
-}
-
 GameObject* findClosestIntersection(Ray ray, vector<GameObject*> objects) {
 	double minDistance = -1;
 	GameObject* closestIntersected = NULL;
@@ -105,11 +99,11 @@ RGB findColor(GameObject* obj) {
 	}
 }
 
-void countProgress(PixelSample sample, Perspective perspective, int TOTAL_PIXELS) {
+void countProgress(PixelSample sample, ImageToRender image, Perspective perspective) {
 	static int reached = -1;
 
 	int pixelsProcessed = (sample.rowPixel() + 1) * perspective.getW() + (sample.columnPixel() + 1);
-	int percent = floor((pixelsProcessed / (double)TOTAL_PIXELS) * 100);
+	int percent = floor((pixelsProcessed / (double)image.getTotalPixels()) * 100);
 	if (percent / 10 != reached && percent % 10 == 0) {
 		reached += 1;
 		cout << percent << " % of pixels processed." << endl;
@@ -117,47 +111,23 @@ void countProgress(PixelSample sample, Perspective perspective, int TOTAL_PIXELS
 }
 
 void rayTracer() {
-	// OK THATS A START, BUT
-	// need to describe high-level algorithm of ray tracer
-
-	// hmmmmm
-	// 1) create some objects and put them in a stack (WORLD COORDINATES)
-	// 2) create camera
-	// 3) create look at transformation matrix
-	// 4) NOPE - dont need to implement the old rasterization algorithm
-	// 4) create basic variables for viewing - width, height, fovy, fovx, near, far planes
-	// 5) create pixel array
-	// 6) iterate over each pixel
-	// 7) shoot rays in them
-	// 8) check for intersections with objects
-	// 9) fill pixel array
-	// 10) output pixel array in file
-	// 11) watch render!!!
-
 	vector<GameObject*> objects = createObjects();
 	Camera camera = initCamera();
 	Perspective perspective = initPerspective();
-
 	Sampler sampler(perspective.getW(), perspective.getH());
-
-	const int BYTES_PER_PIXEL = 3;
-	const int TOTAL_PIXELS = perspective.getW() * perspective.getH();
-	const int PIXELS_SIZE = TOTAL_PIXELS * BYTES_PER_PIXEL;
-	BYTE* pixels = new BYTE[PIXELS_SIZE];
+	ImageToRender image(perspective);
 
 	while (sampler.anySamples()) {
 		PixelSample sample = sampler.getSample();
-
 		Ray ray = findRayForPixel(camera, perspective, sample);
 		GameObject* closestObject = findClosestIntersection(ray, objects);
 		RGB color = findColor(closestObject);
 
-		fill(pixels, perspective.getW(), perspective.getH(), sample, color);
-		countProgress(sample, perspective, TOTAL_PIXELS);
+		image.fill(sample, color);
+		countProgress(sample, image, perspective);
 	}
 
-	FreeImageHelper imageHelper(pixels, perspective.getW(), perspective.getH());
-	imageHelper.save("test_image.png");
+	image.outputToFile("test_image.png");
 }
 
 
