@@ -16,7 +16,7 @@ using namespace glm;
 vector<GameObject*> createObjects() {
 	vector<GameObject*> res;
 
-	Sphere* s = new Sphere(vec3(0.0f, 0.0f, 0.0f), 1, vec3(255, 0, 0));
+	Sphere* s = new Sphere(vec3(0.0f, 0.0f, 0.0f), 0.5, vec3(255, 0, 0));
 
 	res.push_back(s);
 	return res;
@@ -31,18 +31,19 @@ Camera initCamera() {
 }
 
 Perspective initPerspective() {
-	int w = 400, h = 400;
+	int w = 800, h = 600;
 	float aspect = w / (float)h;
-	float fovx = 90.0;
-	float fovy = fovx / aspect;
+	float fovy = 45;
+	float fovyRadians = radians(fovy);
+	float fovx = degrees(2 * atan(tan(fovyRadians / 2.0f) * aspect));
 
-	float zNear = 0.1;
-	float zFar = 99.0;
+	float zNear = 0.1f;
+	float zFar = 99.0f;
 
 	return Perspective(w, h, fovy, fovx, zNear, zFar);
 }
 
-Ray findRayForPixel(Camera camera, Perspective perspective, int i, int j) {
+Ray findRayForPixel(Camera camera, Perspective perspective, int rowPixel, int columnPixel) {
 
 	vec3 rayStart = camera.getEye();
 	vec3 lookVector = camera.getEye() - camera.getCenter();
@@ -51,17 +52,17 @@ Ray findRayForPixel(Camera camera, Perspective perspective, int i, int j) {
 	vec3 u = normalize(cross(camera.getUp(), w));
 	vec3 v = normalize(cross(w, u));
 
-	double pixelCenterI = i + 0.5f;
-	double pixelCenterJ = j + 0.5f;
+	double rowPixelCenter = rowPixel + 0.5f;
+	double columnPixelCenter = columnPixel + 0.5f;
 
-	double tanX = tan(radians(perspective.getFovx() / 2));
-	double tanY = tan(radians(perspective.getFovy() / 2));
+	double tanX = tan(radians(perspective.getFovx()) / 2.0);
+	double tanY = tan(radians(perspective.getFovy()) / 2.0);
 
 	double widthCenter = perspective.getW() / 2.0f;
 	double heightCenter = perspective.getH() / 2.0f;
 
-	double normalizedXLocation = ((pixelCenterI - widthCenter) / widthCenter);
-	double normalizedYLocation = ((heightCenter - pixelCenterJ) / heightCenter);
+	double normalizedXLocation = ((columnPixelCenter - widthCenter) / widthCenter);
+	double normalizedYLocation = ((rowPixelCenter - heightCenter) / heightCenter);
 
 	double alpha = tanX * normalizedXLocation;
 	double beta = tanY * normalizedYLocation;
@@ -71,8 +72,8 @@ Ray findRayForPixel(Camera camera, Perspective perspective, int i, int j) {
 	return Ray(rayStart, rayDirection);
 }
 
-void fill(BYTE* pixels, int width, int height, int i, int j, RGB color) {
-	const int OFFSET = (i * width + j) * 3;
+void fill(BYTE* pixels, int width, int height, int rowPixel, int columnPixel, RGB color) {
+	const int OFFSET = (rowPixel * width + columnPixel) * 3;
 	pixels[OFFSET] = color.getB();
 	pixels[OFFSET + 1] = color.getG();
 	pixels[OFFSET + 2] = color.getR();
@@ -106,6 +107,15 @@ RGB findColor(GameObject* obj) {
 	}
 }
 
+void countProgress(int rowPixel, int columnPixel, Perspective perspective, int TOTAL_PIXELS, int& reached) {
+	int pixelsProcessed = (rowPixel + 1) * perspective.getW() + (columnPixel + 1);
+	int percent = floor((pixelsProcessed / (double)TOTAL_PIXELS) * 100);
+	if (percent / 10 != reached && percent % 10 == 0) {
+		reached += 1;
+		cout << percent << " % of pixels processed." << endl;
+	}
+}
+
 void rayTracer() {
 	// OK THATS A START, BUT
 	// need to describe high-level algorithm of ray tracer
@@ -129,15 +139,18 @@ void rayTracer() {
 	Perspective perspective = initPerspective();
 
 	const int BYTES_PER_PIXEL = 3;
-	const int PIXELS_SIZE = perspective.getW() * perspective.getH() * BYTES_PER_PIXEL;
+	const int TOTAL_PIXELS = perspective.getW() * perspective.getH();
+	const int PIXELS_SIZE = TOTAL_PIXELS * BYTES_PER_PIXEL;
 	BYTE* pixels = new BYTE[PIXELS_SIZE];
-	for (int i = 0; i < perspective.getH(); i++) {
-		for (int j = 0; j < perspective.getW(); j++) {
-			Ray ray = findRayForPixel(camera, perspective, i, j);
+	int reached = -1;
+	for (int rowPixel = 0; rowPixel < perspective.getH(); rowPixel++) {
+		for (int columnPixel = 0; columnPixel < perspective.getW(); columnPixel++) {
+			Ray ray = findRayForPixel(camera, perspective, rowPixel, columnPixel);
 			GameObject* closestObject = findClosestIntersection(ray, objects);
 			RGB color = findColor(closestObject);
 
-			fill(pixels, perspective.getW(), perspective.getH(), i, j, color);
+			fill(pixels, perspective.getW(), perspective.getH(), rowPixel, columnPixel, color);
+			countProgress(rowPixel, columnPixel, perspective, TOTAL_PIXELS, reached);
 		}
 	}
 
@@ -150,6 +163,21 @@ void test() {
 	Sphere sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, vec3(255, 255, 0));
 
 	cout << "intersection distance???:: " << sphere.intersectionDistance(ray) << endl;
+}
+
+void test2() {
+	Camera camera = initCamera();
+	Perspective perspective = initPerspective();
+	Ray ray = findRayForPixel(camera, perspective, perspective.getW() / 2, perspective.getH() / 2);
+	vector<GameObject*> objects = createObjects();
+
+	cout << "ray:: " << ray.getDirection().x << ", " << ray.getDirection().y << ", " << ray.getDirection().z << endl;
+	GameObject* closestObject = findClosestIntersection(ray, objects);
+	cout << "closest objects: " << closestObject->getDiffuse().r << endl;
+}
+
+void test3() {
+
 }
 
 void main() {
