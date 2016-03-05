@@ -7,7 +7,8 @@ private:
 	vec3 location;
 	double radius;
 public:
-	Sphere(vec3 location, double radius);
+	Sphere(vec3 location, double radius, vec3 diffuse);
+	~Sphere();
 
-	bool intersects(Ray ray);
+	double intersectionDistance(Ray ray);
 };

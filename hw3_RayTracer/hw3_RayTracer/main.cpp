@@ -8,6 +8,7 @@
 #include "Sphere.h"
 #include "Camera.h"
 #include "Perspective.h"
+#include "RGB.h"
 
 using namespace std;
 using namespace glm;
@@ -15,7 +16,7 @@ using namespace glm;
 vector<GameObject*> createObjects() {
 	vector<GameObject*> res;
 
-	Sphere* s = new Sphere(vec3(0, 0, -1), 0.5);
+	Sphere* s = new Sphere(vec3(0, 0, -1), 0.5, vec3(255, 255, 25));
 
 	res.push_back(s);
 	return res;
@@ -58,6 +59,37 @@ Ray findRayForPixel(Camera camera, Perspective perspective, int i, int j) {
 	return Ray(rayStart, rayDirection);
 }
 
+void fill(BYTE* pixels, int width, int height, int i, int j, RGB color) {
+	const int OFFSET = (i * width + j) * 3;
+	pixels[OFFSET] = color.getR();
+	pixels[OFFSET + 1] = color.getG();
+	pixels[OFFSET + 2] = color.getB();
+}
+
+GameObject* findClosestIntersection(Ray ray, vector<GameObject*> objects) {
+	double minDistance = -1;
+	GameObject* closestIntersected = NULL;
+
+	for (GameObject* obj : objects) {
+		double distance = obj->intersectionDistance(ray);
+		if (distance < minDistance) {
+			minDistance = distance;
+			closestIntersected = obj;
+		}
+	}
+
+	return closestIntersected;
+}
+
+RGB findColor(GameObject* obj) {
+	if (obj == NULL) {
+		return RGB(0, 0, 0);
+	}
+	else {
+		return RGB(obj->getDiffuse());
+	}
+}
+
 void main() {
 	cout << "Hi, dima :)" << endl;
 	// OK THATS A START, BUT
@@ -87,6 +119,13 @@ void main() {
 	for (int i = 0; i < perspective.getH(); i++) { // j is a row
 		for (int j = 0; j < perspective.getW(); j++) {
 			Ray ray = findRayForPixel(camera, perspective, i, j);
+			GameObject* closestObject = findClosestIntersection(ray, objects);
+			RGB color = findColor(closestObject);
+
+			fill(pixels, perspective.getW(), perspective.getH(), i, j, color);
 		}
 	}
+
+	FreeImageHelper imageHelper(pixels, perspective.getW(), perspective.getH());
+	imageHelper.save("test_image.png");
 }

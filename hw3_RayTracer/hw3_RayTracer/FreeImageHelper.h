@@ -1,6 +1,6 @@
 #pragma once
 
-#include "include/FreeImage.h"
+#include "FreeImage.h"
 #include <string>
 
 using namespace std;
