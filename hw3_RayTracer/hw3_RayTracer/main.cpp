@@ -14,62 +14,11 @@
 #include "Shader.h"
 #include "Intersection.h"
 #include "IntersectionHelper.h"
+#include "WorldInit.h"
+#include "readfile.h"
 
 using namespace std;
 using namespace glm;
-
-vector<GameObject*> createObjects() {
-	vector<GameObject*> res;
-
-	vec3 position = vec3(0.0f, 0.0f, 0.0f);
-	float radius = 1.0f;
-	vec4 ambient(0.2f, 0.2f, 0.2f, 1.0f);
-	vec4 diffuse(0.5f, 0.5f, 0.5f, 1.0f);
-	vec4 specular(1.0f, 1.0f, 1.0f, 1.0f);
-	float shininess(125);
-	Sphere* s = new Sphere(position, radius, ambient, diffuse, specular, shininess);
-
-	res.push_back(s);
-	return res;
-}
-
-Camera initCamera() {
-	vec3 eyeinit(0.0, 0.0, 10.0); // Initial eye position, also for resets
-	vec3 upinit(0.0, 1.0, 0.0); // Initial up position, also for resets
-	vec3 center(0.0, 0.0, 0.0); // Center look at point 
-
-	return Camera(eyeinit, upinit, center);
-}
-
-vector<Light> initLights() {
-	vector<Light> lights;
-
-    vec4 position(0.5, 0.5, -0.5, 0.0);
-	vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
-	Light light(position, color);
-
-	vec4 position2(0.0, 5.0, -2.0, 1.0);
-	vec4 color2(1.0f, 0.0f, 0.0f, 1.0f);
-	Light light2(position2, color2);
-
-	lights.push_back(light);
-	//lights.push_back(light2);
-
-	return lights;
-}
-
-Perspective initPerspective() {
-	int w = 800, h = 600;
-	float aspect = w / (float)h;
-	float fovy = 45;
-	float fovyRadians = radians(fovy);
-	float fovx = degrees(2 * atan(tan(fovyRadians / 2.0f) * aspect));
-
-	float zNear = 0.1f;
-	float zFar = 99.0f;
-
-	return Perspective(w, h, fovy, fovx, zNear, zFar);
-}
 
 Ray findRayForPixel(Camera camera, Perspective perspective, PixelSample sample) {
 
@@ -109,12 +58,15 @@ void countProgress(PixelSample sample, ImageToRender image, Perspective perspect
 }
 
 void rayTracer() {
-	vector<GameObject*> objects = createObjects();
-	Camera camera = initCamera();
-	Perspective perspective = initPerspective();
+
+	WorldInit init = readfile("scene.test");
+
+	vector<GameObject*> objects = init.objects;
+	Camera camera = init.camera;
+	Perspective perspective = init.perspective;
 	Sampler sampler(perspective.getW(), perspective.getH());
 	ImageToRender image(perspective);
-	vector<Light> lights = initLights();
+	vector<Light> lights = init.lights;
 	Shader shader = Shader(lights);
 
 	while (sampler.anySamples()) {

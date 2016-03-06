@@ -1,43 +1,10 @@
-/*****************************************************************************/
-/* This is the program skeleton for homework 2 in CS 184 by Ravi Ramamoorthi */
-/* Extends HW 1 to deal with shading, more transforms and multiple objects   */
-/*****************************************************************************/
-
-/*****************************************************************************/
-// This file is readfile.cpp.  It includes helper functions for matrix 
-// transformations for a stack (matransform) and to rightmultiply the 
-// top of a stack.  These functions are given to aid in setting up the 
-// transformations properly, and to use glm functions in the right way.  
-// Their use is optional in your program.  
-
-
-// The functions readvals and readfile do basic parsing.  You can of course 
-// rewrite the parser as you wish, but we think this basic form might be 
-// useful to you.  It is a very simple parser.
-
-// Please fill in parts that say YOUR CODE FOR HW 2 HERE. 
-// Read the other parts to get a context of what is going on. 
-
-/*****************************************************************************/
-// FOR NOW JUST CREATE HARDCODED OBJECTS AND TRANSFORMATIONS; WHEN ALL STUFF FOR RENDERING WILL BE IMPLEMENTED, UNCOMMENT AND FIX ALL ERRORS
-/*
-// Basic includes to get this file to work.  
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <deque>
-#include <stack>
-#include "Transform.h" 
-
 using namespace std;
-#include "variables.h" 
 #include "readfile.h"
+#include "Sphere.h"
+#include "Perspective.h"
+#include "WorldInit.h"
 
-// You may not need to use the following two functions, but it is provided
-// here for convenience
 
-// The function below applies the appropriate transform to a 4-vector
 void matransform(stack<mat4> &transfstack, float* values)
 {
 	mat4 transform = transfstack.top();
@@ -66,8 +33,24 @@ bool readvals(stringstream &s, const int numvals, float* values)
 	return true;
 }
 
-void readfile(const char* filename)
+WorldInit readfile(const char* filename)
 {
+	vec3 eyeinit(0.0, 0.0, 5.0);
+	vec3 upinit(0.0, 1.0, 0.0);
+	vec3 center(0.0, 0.0, 0.0);
+	int w = 600, h = 400; // width and height 
+	float fovy = 90.0; // For field of view
+
+	vec4 ambient(0.2, 0.2, 0.2, 1.0);
+	vec4 specular(0.0, 0.0, 0.0, 1.0);
+	vec4 diffuse(0.0, 0.0, 0.0, 1.0);
+	vec4 emission(0.0, 0.0, 0.0, 1.0);
+    float shininess = 1.0f;
+	int maxdepth = 5;
+
+	vector<GameObject*> objects = vector<GameObject*>();
+	vector<Light> lights = vector<Light>();
+
 	string str, cmd;
 	ifstream in;
 	in.open(filename);
@@ -92,69 +75,64 @@ void readfile(const char* filename)
 
 								 // Process the light, add it to database.
 								 // Lighting Command
-				if (cmd == "light") {
-					if (numused == numLights) { // No more Lights 
-						cerr << "Reached Maximum Number of Lights " << numused << " Will ignore further lights\n";
+				if (cmd == "directional") {
+					validinput = readvals(s, 6, values); // Position/color for lts.
+					if (validinput) {
+						float x = values[0];
+						float y = values[1];
+						float z = values[2];
+						float w = 0.0f;
+
+						float r = values[4];
+						float g = values[5];
+						float b = values[6];
+						float a = 1.0f;
+						vec4 position(x, y, z, w);
+						vec4 color(r, g, b, a);
+						Light light(position, color);
+						lights.push_back(light);
 					}
-					else {
-						validinput = readvals(s, 8, values); // Position/color for lts.
-						if (validinput) {
-							float x = values[0];
-							float y = values[1];
-							float z = values[2];
-							float w = values[3];
+				}
+				else if (cmd == "point") {
+					validinput = readvals(s, 6, values); // Position/color for lts.
+					if (validinput) {
+						float x = values[0];
+						float y = values[1];
+						float z = values[2];
+						float w = 1.0f;
 
-							float r = values[4];
-							float g = values[5];
-							float b = values[6];
-							float a = values[7];
-
-							int lightOffset = 4 * numused;
-
-							lightposn[lightOffset] = x;
-							lightposn[lightOffset + 1] = y;
-							lightposn[lightOffset + 2] = z;
-							lightposn[lightOffset + 3] = w;
-
-							lightcolor[lightOffset] = r;
-							lightcolor[lightOffset + 1] = g;
-							lightcolor[lightOffset + 2] = b;
-							lightcolor[lightOffset + 3] = a;
-
-							++numused;
-						}
+						float r = values[4];
+						float g = values[5];
+						float b = values[6];
+						float a = 1.0f;
+						vec4 position(x, y, z, w);
+						vec4 color(r, g, b, a);
+						Light light(position, color);
+						lights.push_back(light);
 					}
 				}
 				else if (cmd == "ambient") {
-					validinput = readvals(s, 4, values); // colors 
+					validinput = readvals(s, 3, values); // colors 
 					if (validinput) {
-						for (i = 0; i < 4; i++) {
-							ambient[i] = values[i];
-						}
+						ambient = vec4(values[0], values[1], values[2], 1.0);
 					}
 				}
 				else if (cmd == "diffuse") {
-					validinput = readvals(s, 4, values);
+					validinput = readvals(s, 3, values);
 					if (validinput) {
-						for (i = 0; i < 4; i++) {
-							diffuse[i] = values[i];
-						}
+						diffuse = vec4(values[0], values[1], values[2], 1.0);
 					}
 				}
 				else if (cmd == "specular") {
-					validinput = readvals(s, 4, values);
+					validinput = readvals(s, 3, values);
 					if (validinput) {
-						for (i = 0; i < 4; i++) {
-							specular[i] = values[i];
-						}
+						specular = vec4(values[0], values[1], values[2], 1.0);
 					}
 				}
 				else if (cmd == "emission") {
-					validinput = readvals(s, 4, values);
+					validinput = readvals(s, 3, values);
 					if (validinput) {
-						for (i = 0; i < 4; i++) {
-							emission[i] = values[i];
-						}
+						emission = vec4(values[0], values[1], values[2], 1.0);
 					}
 				}
 				else if (cmd == "shininess") {
@@ -179,38 +157,10 @@ void readfile(const char* filename)
 						fovy = values[9];
 					}
 				}
-
-				else if (cmd == "sphere" || cmd == "cube" || cmd == "teapot") {
-					if (numobjects == maxobjects) { // No more objects 
-						cerr << "Reached Maximum Number of Objects " << numobjects << " Will ignore further objects\n";
-					}
-					else {
-						validinput = readvals(s, 1, values);
-						if (validinput) {
-							object * obj = &(objects[numobjects]);
-							obj->size = values[0];
-
-							for (i = 0; i < 4; i++) {
-								(obj->ambient)[i] = ambient[i];
-								(obj->diffuse)[i] = diffuse[i];
-								(obj->specular)[i] = specular[i];
-								(obj->emission)[i] = emission[i];
-							}
-							obj->shininess = shininess;
-
-							obj->transform = transfstack.top();
-
-							if (cmd == "sphere") {
-								obj->type = sphere;
-							}
-							else if (cmd == "cube") {
-								obj->type = cube;
-							}
-							else if (cmd == "teapot") {
-								obj->type = teapot;
-							}
-						}
-						++numobjects;
+				else if (cmd == "maxdepth") {
+					validinput = readvals(s, 1, values); // 10 values eye cen up fov
+					if (validinput) {
+						maxdepth = values[0];
 					}
 				}
 
@@ -259,6 +209,21 @@ void readfile(const char* filename)
 					}
 				}
 
+				else if (cmd == "sphere") {
+					validinput = readvals(s, 4, values);
+					if (validinput) {
+						float x = values[0];
+						float y = values[1];
+						float z = values[2];
+						vec3 location(x, y, z);
+						float radius = values[3];
+						mat4 transform = transfstack.top();
+
+						Sphere* sphere = new Sphere(location, radius, ambient, diffuse, specular, shininess, transform);
+						objects.push_back(sphere);
+					}
+				}
+
 				// I include the basic push/pop code for matrix stacks
 				else if (cmd == "pushTransform") {
 					transfstack.push(transfstack.top());
@@ -278,19 +243,20 @@ void readfile(const char* filename)
 			}
 			getline(in, str);
 		}
-
-		// Set up initial position for eye, up and amount
-		// As well as booleans 
-
-		eye = eyeinit;
-		up = upinit;
-		amount = 5;
-		sx = sy = 1.0;  // keyboard controlled scales in x and y 
-		tx = ty = 0.0;  // keyboard controllled translation in x and y  
 	}
 	else {
 		cerr << "Unable to Open Input Data File " << filename << "\n";
 		throw 2;
 	}
+
+	Camera camera(eyeinit, upinit, center);
+
+	float aspect = w / (float)h;
+	float fovyRadians = radians(fovy);
+	float fovx = degrees(2 * atan(tan(fovyRadians / 2.0f) * aspect));
+	float zNear = 0.1f;
+	float zFar = 99.0f;
+	Perspective perspective(w, h, fovy, fovx, zNear, zFar);
+
+	return WorldInit(camera, perspective, objects, lights, maxdepth);
 }
-*/

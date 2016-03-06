@@ -20,7 +20,8 @@ Intersection IntersectionHelper::findClosestIntersection(Ray ray, std::vector<Ga
 		return Intersection(NULL, -1.0, vec3(0, 0, 0));
 	}
 	else {
-		return Intersection(closestIntersected, minDistance, ray.getStart() + ((float)minDistance-0.01f) * ray.getDirection());
+		vec3 intersectionPosition = ray.getStart() + ((float)minDistance) * normalize(ray.getDirection());
+		return Intersection(closestIntersected, minDistance, intersectionPosition);
 	}
 }
 

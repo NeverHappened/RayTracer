@@ -16,3 +16,7 @@
  float GameObject::getShininess() const {
 	 return shininess;
  }
+
+ mat4 GameObject::getTransform() const {
+	 return transform;
+ }
