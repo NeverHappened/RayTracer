@@ -58,5 +58,5 @@ double Sphere::intersectionDistance(Ray ray) {
 }
 
 vec3 Sphere::getNormal(vec3 point) {
-	return point - location;
+	return normalize(location-point);
 }

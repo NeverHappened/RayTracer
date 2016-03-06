@@ -30,5 +30,8 @@ BYTE RGB::getB() const {
 }
 
 int RGB::floatTo255(float color) const {
+	if (color > 1.0f) {
+		return 255.0f;
+	}
 	return color * 255.0f;
 }

@@ -26,7 +26,7 @@ vector<GameObject*> createObjects() {
 	vec4 ambient(0.2f, 0.2f, 0.2f, 1.0f);
 	vec4 diffuse(0.5f, 0.5f, 0.5f, 1.0f);
 	vec4 specular(1.0f, 1.0f, 1.0f, 1.0f);
-	float shininess(100.0f);
+	float shininess(125);
 	Sphere* s = new Sphere(position, radius, ambient, diffuse, specular, shininess);
 
 	res.push_back(s);
@@ -34,7 +34,7 @@ vector<GameObject*> createObjects() {
 }
 
 Camera initCamera() {
-	vec3 eyeinit(0.0, 0.0, 5.0); // Initial eye position, also for resets
+	vec3 eyeinit(0.0, 0.0, 10.0); // Initial eye position, also for resets
 	vec3 upinit(0.0, 1.0, 0.0); // Initial up position, also for resets
 	vec3 center(0.0, 0.0, 0.0); // Center look at point 
 
@@ -44,16 +44,16 @@ Camera initCamera() {
 vector<Light> initLights() {
 	vector<Light> lights;
 
-	vec4 position(0.0, 0.0, -5.0, 1.0);
-	vec4 color(1.0f, 0.5f, 1.0f, 1.0f);
+    vec4 position(0.5, 0.5, -0.5, 0.0);
+	vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
 	Light light(position, color);
 
-	//vec4 position2(0.0, 5.0, -5.0, 1.0);
-//	vec4 color2(1.0f, 1.0f, 1.0f, 1.0f);
-//	Light light2(position, color);
+	vec4 position2(0.0, 5.0, -2.0, 1.0);
+	vec4 color2(1.0f, 0.0f, 0.0f, 1.0f);
+	Light light2(position2, color2);
 
-	//lights.push_back(light2);
 	lights.push_back(light);
+	//lights.push_back(light2);
 
 	return lights;
 }
@@ -86,12 +86,12 @@ Ray findRayForPixel(Camera camera, Perspective perspective, PixelSample sample) 
 	double widthCenter = perspective.getW() / 2.0f;
 	double heightCenter = perspective.getH() / 2.0f;
 
-	double normalizedXLocation = ((sample.getPixelXCenter() - widthCenter) / widthCenter);
+	double normalizedXLocation = ((widthCenter - sample.getPixelXCenter()) / widthCenter);
 	double normalizedYLocation = ((sample.getPixelYCenter() - heightCenter) / heightCenter);
 
-	double alpha = tanX * normalizedXLocation;
-	double beta = tanY * normalizedYLocation;
-	vec3 _rayDirection = vec3(alpha, alpha, alpha) * u + vec3(beta, beta, beta) * v - w;
+	float alpha = tanX * normalizedXLocation;
+	float beta = tanY * normalizedYLocation;
+	vec3 _rayDirection = alpha * u + beta * v - w;
 	vec3 rayDirection = normalize(_rayDirection);
 
 	return Ray(rayStart, rayDirection);
