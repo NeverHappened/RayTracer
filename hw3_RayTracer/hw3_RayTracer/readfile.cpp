@@ -68,7 +68,6 @@ WorldInit readfile(const char* filename)
 
 				stringstream s(str);
 				s >> cmd;
-				int i;
 				float values[10]; // Position and color for light, colors for others
 									// Up to 10 params for cameras.  
 				bool validinput; // Validity of input 
@@ -160,7 +159,7 @@ WorldInit readfile(const char* filename)
 				else if (cmd == "maxdepth") {
 					validinput = readvals(s, 1, values); // 10 values eye cen up fov
 					if (validinput) {
-						maxdepth = values[0];
+						maxdepth = (int)values[0];
 					}
 				}
 

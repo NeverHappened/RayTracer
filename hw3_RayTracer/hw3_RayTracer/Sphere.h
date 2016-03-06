@@ -14,4 +14,5 @@ public:
 	double intersectionDistance(Ray ray);
 
 	virtual vec3 getNormal(vec3 point);
+	double withTransformations(Ray ray);
 };

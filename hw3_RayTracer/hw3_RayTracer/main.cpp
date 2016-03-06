@@ -29,8 +29,8 @@ Ray findRayForPixel(Camera camera, Perspective perspective, PixelSample sample) 
 	vec3 u = normalize(cross(camera.getUp(), w));
 	vec3 v = normalize(cross(w, u));
 
-	float tanX = tan(radians(perspective.getFovx()) / 2.0);
-	float tanY = tan(radians(perspective.getFovy()) / 2.0);
+	float tanX = (float)tan(radians(perspective.getFovx()) / 2.0);
+	float tanY = (float)tan(radians(perspective.getFovy()) / 2.0);
 
 	float widthCenter = perspective.getW() / 2.0f;
 	float heightCenter = perspective.getH() / 2.0f;
