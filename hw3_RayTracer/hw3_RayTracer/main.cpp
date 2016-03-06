@@ -12,6 +12,8 @@
 #include "Sampler.h"
 #include "ImageToRender.h"
 #include "Shader.h"
+#include "Intersection.h"
+#include "IntersectionHelper.h"
 
 using namespace std;
 using namespace glm;
@@ -20,7 +22,7 @@ vector<GameObject*> createObjects() {
 	vector<GameObject*> res;
 
 	vec3 position = vec3(0.0f, 0.0f, 0.0f);
-	float radius = 0.5f;
+	float radius = 1.0f;
 	vec4 ambient(0.2f, 0.2f, 0.2f, 1.0f);
 	vec4 diffuse(0.5f, 0.5f, 0.5f, 1.0f);
 	vec4 specular(1.0f, 1.0f, 1.0f, 1.0f);
@@ -42,9 +44,15 @@ Camera initCamera() {
 vector<Light> initLights() {
 	vector<Light> lights;
 
-	vec4 position(0.6, 0.0, 0.1, 0);
+	vec4 position(0.0, 0.0, -5.0, 1.0);
 	vec4 color(1.0f, 0.5f, 1.0f, 1.0f);
 	Light light(position, color);
+
+	//vec4 position2(0.0, 5.0, -5.0, 1.0);
+//	vec4 color2(1.0f, 1.0f, 1.0f, 1.0f);
+//	Light light2(position, color);
+
+	//lights.push_back(light2);
 	lights.push_back(light);
 
 	return lights;
@@ -89,25 +97,6 @@ Ray findRayForPixel(Camera camera, Perspective perspective, PixelSample sample) 
 	return Ray(rayStart, rayDirection);
 }
 
-GameObject* findClosestIntersection(Ray ray, vector<GameObject*> objects) {
-	double minDistance = -1;
-	GameObject* closestIntersected = NULL;
-
-	for (GameObject* obj : objects) {
-		double distance = obj->intersectionDistance(ray);
-		if (minDistance == -1 && distance != -1) {
-			minDistance = distance;
-			closestIntersected = obj;
-		}
-		else if (distance < minDistance) {
-			minDistance = distance;
-			closestIntersected = obj;
-		}
-	}
-
-	return closestIntersected;
-}
-
 void countProgress(PixelSample sample, ImageToRender image, Perspective perspective) {
 	static int reached = -1;
 
@@ -131,8 +120,8 @@ void rayTracer() {
 	while (sampler.anySamples()) {
 		PixelSample sample = sampler.getSample();
 		Ray ray = findRayForPixel(camera, perspective, sample);
-		GameObject* closestObject = findClosestIntersection(ray, objects);
-		RGB color = shader.shade(closestObject, ray);
+		Intersection closestIntersection = IntersectionHelper::findClosestIntersection(ray, objects);
+		RGB color = shader.shade(camera, closestIntersection, ray, sample, objects);
 
 		image.fill(sample, color);
 		countProgress(sample, image, perspective);

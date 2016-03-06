@@ -12,8 +12,7 @@ Sphere::Sphere(vec3 location, double radius, vec4 _ambient, vec4 _diffuse, vec4 
 Sphere::~Sphere()
 {}
 
-double Sphere::intersectionDistance(Ray ray) {
-
+double Sphere::intersectionHelper(Ray ray) {
 	vec3 P0 = ray.getStart();
 	vec3 P1 = ray.getDirection();
 	vec3 C = location;
@@ -26,16 +25,38 @@ double Sphere::intersectionDistance(Ray ray) {
 
 	double disc = b * b - 4 * a * c;
 	if (disc < 0) {
-		return -1; // no intersection
+		return -1.0; // no intersection
 	}
 	else if (disc == 0) {
-		return -b / (2 * a);
+		double t1 = -b / (2 * a);
+		if (t1 > 0) {
+			return t1;
+		}
+		else {
+			return -1.0;
+		}
 	}
 	else {
 		// two roots, pick closest to the ray origin
 		double t1 = (-b + sqrt(disc)) / (2 * a);
 		double t2 = (-b - sqrt(disc)) / (2 * a);
-		return min(t1, t2);
+		if (t1 < 0.0 && t2 < 0.0) {
+			return -1.0;
+		}
+		else if (min(t1, t2) < 0.0) {
+			return -1.0;
+		}
+		else {
+			return min(t1, t2);
+		}
 	}
-	// consider cases when one root is negative - that means that the camera is inside the sphere
+}
+
+double Sphere::intersectionDistance(Ray ray) {
+	double dist = intersectionHelper(ray);
+	return  dist > 0.01 ? dist : -1.0;
+}
+
+vec3 Sphere::getNormal(vec3 point) {
+	return point - location;
 }

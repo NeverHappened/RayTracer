@@ -32,3 +32,8 @@
 *.log
 **/hw3_RayTracer/Debug/**
 **/hw3_RayTracer/Release/**
+
+*testimage.png
+*.opendb
+*.vcxproj
+*.vcxproj.filters

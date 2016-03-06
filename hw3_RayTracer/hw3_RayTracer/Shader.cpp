@@ -10,65 +10,83 @@ void Shader::addLight(Light light) {
 	lights.push_back(light);
 }
 
-RGB Shader::shade(GameObject* obj, Ray ray) {
-	if (hit(obj)) {
-		return shade(obj);
+RGB Shader::shade(Camera camera, Intersection intersection, Ray ray, PixelSample sample, vector<GameObject*> objects) {
+	if (intersection.isIntersection()) {
+		return computeLightOnHit(camera, intersection, ray, objects);
 	}
 	else {
-		return RGB(25, 25, 25);
+		return RGB(0, 0, 0);
 	}
 }
 
-bool Shader::hit(GameObject* obj) {
-	return obj != NULL;
+double distance(vec3 vect) {
+	return sqrt(vect.x * vect.x +
+		vect.y * vect.y +
+		vect.z * vect.z);
 }
 
-/*
+bool Shader::lightVisibleFromHere(Intersection intersection, Light light, vector<GameObject*> objects) {
 
-vec4 ComputeLight(vec3 fragment_position, vec3 surface_normal, vec3 eye_direction) {
-	vec4 result = ambient + emission;
+	vec3 lookToLightSource = intersection.getPosition() - light.getPosition();
+	Ray rayToLightSource(intersection.getPosition(), normalize(lookToLightSource));
 
-	for (int i = 0; i < numused; i++) {
-		vec4 light_position = lightposn[i];
-		vec4 light_color = lightcolor[i];
+	double distanceToLightSource = distance(lookToLightSource);
+	Intersection onThePathToLight = IntersectionHelper::findClosestIntersection(rayToLightSource, objects);
 
-		vec3 light_direction;
-		if (light_position.w == 0) {
-			light_direction = normalize(light_position.xyz);
-		}
-		else {
-			vec3 _light_direction = light_position.xyz - fragment_position;
-			light_direction = normalize(_light_direction);
-		}
+	if (!onThePathToLight.isIntersection()) {
+		return true;
+	}
+	else if (onThePathToLight.getDistance() > distanceToLightSource) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
-		vec3 half_angle = normalize(light_direction + eye_direction);
 
-		vec4 diffuse_part = diffuse * light_color * max(0.0, dot(surface_normal, light_direction));
-		vec4 specular_part = specular * light_color * pow(max(0.0, dot(surface_normal, half_angle)), shininess); // phong illumination
+double Shader::computeDistanceFromTo(Intersection intersection, Light light) {
+	vec3 lookToLightSource = light.getPosition() - intersection.getPosition();
+	return distance(lookToLightSource);
+}
 
-		vec4 total_light_intensity_part = diffuse_part + specular_part;
-		result += total_light_intensity_part;
+//double attenuate(RGB color, double distanceToLight); // TODO! // FOR NOW COMPUTE LIGHT WITHOUT ATTENUATION MODEL!
+
+RGB Shader::computeLightOnHit(Camera camera, Intersection intersection, Ray ray, vector<GameObject*> objects) {
+	GameObject* obj = intersection.getObject();
+	vec4 resultLight = obj->getAmbient(); //+ obj->getEmission(); // no support for emission for now
+	
+	for (Light& light : lights) {
+//		if (!lightVisibleFromHere(intersection, light, objects)) {// TURN OFF SHADOWS FOR NOW
+//			continue;
+//		}
+		
+		resultLight += standardShadingFormula(camera, light, intersection);
+	}
+	
+	return RGB(resultLight);
+}
+
+vec4 Shader::standardShadingFormula(Camera camera, Light light, Intersection intersection) {
+
+	GameObject* obj = intersection.getObject();
+
+	vec3 lightDirection;
+	double attenuation = 1.0f;
+	if (light.isDirectional()) {
+		lightDirection = normalize(light.getPosition());
+	}
+	else {
+		vec3 _light_direction = light.getPosition() - intersection.getPosition();
+		lightDirection = normalize(_light_direction);
+		attenuation = 1.0f / computeDistanceFromTo(intersection, light); // FIX THIS IF NEEDED (USE FUNCTION AND MAYBE DIFFERENT FORMULA (1/r^2)???)
 	}
 
-	return result;
-}
+	vec3 half_angle = normalize(lightDirection + camera.getDirection());
+	vec3 surfaceNormal = normalize(obj->getNormal(intersection.getPosition()));
 
-vec3 fragment_position() {
-	vec4 _mypos = gl_ModelViewMatrix * myvertex;
-	return _mypos.xyz / _mypos.w;
-}
+	vec4 diffuse_part = obj->getDiffuse() * light.getColor() * max(0.0f, dot(surfaceNormal, lightDirection));
+	vec4 specular_part = obj->getSpecular() * light.getColor() * pow(max(0.0f, dot(surfaceNormal, half_angle)), obj->getShininess()); // phong illumination
 
-vec3 eye_position() {
-	return vec3(0, 0, 0);
+	return diffuse_part + specular_part;
 }
-
-vec3 eye_direction() {
-	return normalize(eye_position() - fragment_position());
-}
-
-vec3 fragment_normal() {
-	vec3 _normal = (gl_ModelViewMatrixInverseTranspose * vec4(mynormal, 0.0)).xyz;
-	vec3 normal = normalize(_normal);
-	return normal;
-}
-*/
