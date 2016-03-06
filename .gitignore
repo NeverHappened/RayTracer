@@ -26,3 +26,9 @@
 *.exe
 *.out
 *.app
+
+*.tlog
+*.suo
+*.log
+**/hw3_RayTracer/Debug/**
+**/hw3_RayTracer/Release/**
