@@ -4,8 +4,14 @@
 
 class GameObject {
 protected:
-	vec3 diffuse;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	float shininess;
 public:
 	virtual double intersectionDistance(Ray ray) = 0;
-	virtual vec3 getDiffuse() const;
+	virtual vec4 getAmbient() const;
+	virtual vec4 getDiffuse() const;
+	virtual vec4 getSpecular() const;
+	virtual float getShininess() const;
 };

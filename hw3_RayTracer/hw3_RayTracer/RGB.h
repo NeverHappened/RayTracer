@@ -14,9 +14,12 @@ private:
 public:
 	RGB(BYTE r, BYTE g, BYTE b);
 	RGB(vec3 color);
+	RGB(vec4 color);
 	~RGB();
 
 	BYTE getR() const;
 	BYTE getG() const;
 	BYTE getB() const;
+
+	int RGB::floatTo255(float color) const;
 };

@@ -11,6 +11,7 @@
 #include "RGB.h"
 #include "Sampler.h"
 #include "ImageToRender.h"
+#include "Shader.h"
 
 using namespace std;
 using namespace glm;
@@ -18,7 +19,13 @@ using namespace glm;
 vector<GameObject*> createObjects() {
 	vector<GameObject*> res;
 
-	Sphere* s = new Sphere(vec3(0.0f, 0.0f, 0.0f), 0.5, vec3(255, 0, 0));
+	vec3 position = vec3(0.0f, 0.0f, 0.0f);
+	float radius = 0.5f;
+	vec4 ambient(0.2f, 0.2f, 0.2f, 1.0f);
+	vec4 diffuse(0.5f, 0.5f, 0.5f, 1.0f);
+	vec4 specular(1.0f, 1.0f, 1.0f, 1.0f);
+	float shininess(100.0f);
+	Sphere* s = new Sphere(position, radius, ambient, diffuse, specular, shininess);
 
 	res.push_back(s);
 	return res;
@@ -30,6 +37,17 @@ Camera initCamera() {
 	vec3 center(0.0, 0.0, 0.0); // Center look at point 
 
 	return Camera(eyeinit, upinit, center);
+}
+
+vector<Light> initLights() {
+	vector<Light> lights;
+
+	vec4 position(0.6, 0.0, 0.1, 0);
+	vec4 color(1.0f, 0.5f, 1.0f, 1.0f);
+	Light light(position, color);
+	lights.push_back(light);
+
+	return lights;
 }
 
 Perspective initPerspective() {
@@ -90,20 +108,11 @@ GameObject* findClosestIntersection(Ray ray, vector<GameObject*> objects) {
 	return closestIntersected;
 }
 
-RGB findColor(GameObject* obj) {
-	if (obj == NULL) {
-		return RGB(25, 25, 25);
-	}
-	else {
-		return RGB(obj->getDiffuse());
-	}
-}
-
 void countProgress(PixelSample sample, ImageToRender image, Perspective perspective) {
 	static int reached = -1;
 
 	int pixelsProcessed = (sample.rowPixel() + 1) * perspective.getW() + (sample.columnPixel() + 1);
-	int percent = floor((pixelsProcessed / (double)image.getTotalPixels()) * 100);
+	int percent = (int) floor((pixelsProcessed / (double)image.getTotalPixels()) * 100);
 	if (percent / 10 != reached && percent % 10 == 0) {
 		reached += 1;
 		cout << percent << " % of pixels processed." << endl;
@@ -116,12 +125,14 @@ void rayTracer() {
 	Perspective perspective = initPerspective();
 	Sampler sampler(perspective.getW(), perspective.getH());
 	ImageToRender image(perspective);
+	vector<Light> lights = initLights();
+	Shader shader = Shader(lights);
 
 	while (sampler.anySamples()) {
 		PixelSample sample = sampler.getSample();
 		Ray ray = findRayForPixel(camera, perspective, sample);
 		GameObject* closestObject = findClosestIntersection(ray, objects);
-		RGB color = findColor(closestObject);
+		RGB color = shader.shade(closestObject, ray);
 
 		image.fill(sample, color);
 		countProgress(sample, image, perspective);
@@ -129,8 +140,6 @@ void rayTracer() {
 
 	image.outputToFile("test_image.png");
 }
-
-
 
 
 void main() {
