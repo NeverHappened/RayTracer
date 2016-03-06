@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
+#include "readfile.h"
 #include "GameObject.h"
 #include "Sphere.h"
 #include "Camera.h"
@@ -14,8 +15,7 @@
 #include "Shader.h"
 #include "Intersection.h"
 #include "IntersectionHelper.h"
-#include "WorldInit.h"
-#include "readfile.h"
+
 
 using namespace std;
 using namespace glm;
@@ -29,14 +29,14 @@ Ray findRayForPixel(Camera camera, Perspective perspective, PixelSample sample) 
 	vec3 u = normalize(cross(camera.getUp(), w));
 	vec3 v = normalize(cross(w, u));
 
-	double tanX = tan(radians(perspective.getFovx()) / 2.0);
-	double tanY = tan(radians(perspective.getFovy()) / 2.0);
+	float tanX = tan(radians(perspective.getFovx()) / 2.0);
+	float tanY = tan(radians(perspective.getFovy()) / 2.0);
 
-	double widthCenter = perspective.getW() / 2.0f;
-	double heightCenter = perspective.getH() / 2.0f;
+	float widthCenter = perspective.getW() / 2.0f;
+	float heightCenter = perspective.getH() / 2.0f;
 
-	double normalizedXLocation = ((widthCenter - sample.getPixelXCenter()) / widthCenter);
-	double normalizedYLocation = ((sample.getPixelYCenter() - heightCenter) / heightCenter);
+	float normalizedXLocation = ((widthCenter - sample.getPixelXCenter()) / widthCenter);
+	float normalizedYLocation = ((sample.getPixelYCenter() - heightCenter) / heightCenter);
 
 	float alpha = tanX * normalizedXLocation;
 	float beta = tanY * normalizedYLocation;
