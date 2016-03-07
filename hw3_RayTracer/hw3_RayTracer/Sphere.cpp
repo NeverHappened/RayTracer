@@ -14,28 +14,43 @@ Sphere::~Sphere()
 {}
 
 double Sphere::intersectionDistance(Ray ray) {
-//	double dist = intersectionHelper(ray);
 	double dist = withTransformations(ray);
 	return dist > 0.01 ? dist : -1.0;
 }
 
-vec3 Sphere::getNormal(vec3 point) { // TODO - interpolate normal as it needs to be
-	return normalize(location - point);
+vec3 Sphere::getNormal(vec3 point) { // in real coords
+
+	//vec4 locationInDiffCorrds = vec4(location, 1.0f) * transform;
+	//vec3 normal = normalize(vec3(locationInDiffCorrds) - point);
+	//vec3 result = vec3(vec4(normal, 0.0f) * inverse(getTransform()));
+
+	return vec3(inverse(getTransform()) * vec4((location - point), 0.0));
+}
+
+double vectorDistance(vec3 o) {
+	return sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
 }
 
 double Sphere::withTransformations(Ray ray) {
-	mat4 transf = getTransform();
-	vec4 transformedPoint = inverse(transf) * vec4(ray.getStart(), 1.0);
-	//vec4 transformedDirection = transform * vec4(ray.getDirection(), 0.0); // NO ! rays dont transform
+	mat4 M = getTransform();
+	Ray R = ray;
+	Sphere* P = this;
 
-	Ray transformedRay = Ray(vec3(transformedPoint), ray.getDirection());
-	float distance = (float)intersectionHelper(transformedRay);
-	vec3 transformedIntersectionPoint = ray.getStart() + distance * normalize(ray.getDirection());
-	vec4 originalPoint = transf * vec4(transformedIntersectionPoint, 1.0);
-	vec3 o = vec3(originalPoint) - ray.getStart();
-
-	return sqrt(o.x * o.x + o.y * o.y + o.z * o.z); // distance to point
+	// apply inverse transform to the original ray
+	vec4 origin_prime = inverse(M) * vec4(R.getStart(), 1.0);
+	vec4 direction_prime = inverse(M) * vec4(normalize(R.getDirection()), 1.0);
+	Ray R_prime = Ray(vec3(origin_prime), vec3(direction_prime));
+	// compute intersection between original object and R'
+	float distance = (float)intersectionHelper(R_prime);
+	vec3 P_prime_star = R_prime.getStart() + R_prime.getDirection() * distance;
+	
+	// find intersection point in the actual world
+	vec3 actual_world_point = vec3(M * vec4(P_prime_star, 1.0f));
+	double distance_to_actual_world_point = vectorDistance(R.getStart() - actual_world_point);
+	return distance_to_actual_world_point;
 }
+
+
 
 double Sphere::intersectionHelper(Ray ray) {
 	vec3 P0 = ray.getStart();
