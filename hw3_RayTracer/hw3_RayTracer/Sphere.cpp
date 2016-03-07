@@ -19,11 +19,6 @@ double Sphere::intersectionDistance(Ray ray) {
 }
 
 vec3 Sphere::getNormal(vec3 point) { // in real coords
-
-	//vec4 locationInDiffCorrds = vec4(location, 1.0f) * transform;
-	//vec3 normal = normalize(vec3(locationInDiffCorrds) - point);
-	//vec3 result = vec3(vec4(normal, 0.0f) * inverse(getTransform()));
-
 	return vec3(inverse(getTransform()) * vec4((location - point), 0.0));
 }
 
@@ -43,7 +38,6 @@ double Sphere::withTransformations(Ray ray) {
 	// compute intersection between original object and R'
 	float distance = (float)intersectionHelper(R_prime);
 	vec3 P_prime_star = R_prime.getStart() + R_prime.getDirection() * distance;
-	
 	// find intersection point in the actual world
 	vec3 actual_world_point = vec3(M * vec4(P_prime_star, 1.0f));
 	double distance_to_actual_world_point = vectorDistance(R.getStart() - actual_world_point);
