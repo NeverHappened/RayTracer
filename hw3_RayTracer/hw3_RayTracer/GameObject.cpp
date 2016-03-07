@@ -13,6 +13,10 @@
 	 return specular;
  }
 
+ vec4 GameObject::getEmission() const {
+	 return emission;
+ }
+
  float GameObject::getShininess() const {
 	 return shininess;
  }

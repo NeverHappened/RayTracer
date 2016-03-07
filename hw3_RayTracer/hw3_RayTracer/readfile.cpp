@@ -42,6 +42,8 @@ WorldInit readfile(const char* filename)
 	int w = 600, h = 400; // width and height 
 	float fovy = 90.0; // For field of view
 
+	vec3 attenuation = vec3(1.0, 0.0, 0.0);
+
 	vec4 ambient(0.2, 0.2, 0.2, 1.0);
 	vec4 specular(0.0, 0.0, 0.0, 1.0);
 	vec4 diffuse(0.0, 0.0, 0.0, 1.0);
@@ -52,7 +54,7 @@ WorldInit readfile(const char* filename)
 	vector<GameObject*> objects = vector<GameObject*>();
 	vector<Light> lights = vector<Light>();
 
-	vec3 *vertices; // array of vertices
+	vec3 *vertices = NULL; // array of vertices
 	int verticesCreated = 0;
 
 	string str, cmd;
@@ -92,7 +94,7 @@ WorldInit readfile(const char* filename)
 						float a = 1.0f;
 						vec4 position(x, y, z, w);
 						vec4 color(r, g, b, a);
-						Light light(position, color);
+						Light light(position, color, attenuation);
 						lights.push_back(light);
 					}
 				}
@@ -110,8 +112,18 @@ WorldInit readfile(const char* filename)
 						float a = 1.0f;
 						vec4 position(x, y, z, w);
 						vec4 color(r, g, b, a);
-						Light light(position, color);
+						Light light(position, color, attenuation);
 						lights.push_back(light);
+					}
+				}
+				else if (cmd == "attenuation") {
+					validinput = readvals(s, 3, values); // Position/color for lts.
+					if (validinput) {
+						float constant = values[0];
+						float linear = values[1];
+						float quadratic = values[2];
+						
+						attenuation = vec3(constant, linear, quadratic);
 					}
 				}
 				else if (cmd == "ambient") {
@@ -222,7 +234,7 @@ WorldInit readfile(const char* filename)
 						float radius = values[3];
 						mat4 transform = transfstack.top();
 
-						Sphere* sphere = new Sphere(location, radius, ambient, diffuse, specular, shininess, transform);
+						Sphere* sphere = new Sphere(location, radius, ambient, diffuse, specular, shininess, emission, transform);
 						objects.push_back(sphere);
 					}
 				}
@@ -271,7 +283,7 @@ WorldInit readfile(const char* filename)
 						int v3 = (int)values[2];
 
 						// create Triangle(v1, v2, v3)
-						Triangle* triangle = new Triangle(vertices[v1], vertices[v2], vertices[v3]);
+						Triangle* triangle = new Triangle(vertices[v1], vertices[v2], vertices[v3], ambient, diffuse, specular, shininess, emission, transform);
 						objects.push_back(triangle);
 					}
 				}

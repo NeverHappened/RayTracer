@@ -1,6 +1,6 @@
 #include "Light.h"
 
-Light::Light(vec4 position, vec4 color) : position(position), color(color)
+Light::Light(vec4 position, vec4 color, vec3 attenuation) : position(position), color(color), attenuation(attenuation)
 {}
 
 Light::~Light()
@@ -16,4 +16,8 @@ vec3 Light::getPosition() const {
 
 vec4 Light::getColor() const {
 	return color;
+}
+
+vec3 Light::getAttenuation() const {
+	return attenuation;
 }

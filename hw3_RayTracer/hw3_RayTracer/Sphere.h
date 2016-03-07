@@ -8,7 +8,7 @@ private:
 	double radius;
 	double intersectionHelper(Ray ray);
 public:
-	Sphere(vec3 location, double radius, vec4 _ambient, vec4 _diffuse, vec4 _specular, float _shininess, mat4 transform);
+	Sphere(vec3 location, double radius, vec4 _ambient, vec4 _diffuse, vec4 _specular, float _shininess, vec4 emission, mat4 transform);
 	~Sphere();
 
 	double intersectionDistance(Ray ray);

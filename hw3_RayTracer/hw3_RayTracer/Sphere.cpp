@@ -1,11 +1,12 @@
 #include "Sphere.h"
 
-Sphere::Sphere(vec3 location, double radius, vec4 _ambient, vec4 _diffuse, vec4 _specular, float _shininess, mat4 _transform) :
+Sphere::Sphere(vec3 location, double radius, vec4 _ambient, vec4 _diffuse, vec4 _specular, float _shininess, vec4 _emission, mat4 _transform) :
 	location(location), radius(radius)
 {
 	ambient = _ambient;
 	diffuse = _diffuse;
 	specular = _specular;
+	emission = _emission;
 	shininess = _shininess;
 	transform = _transform;
 }

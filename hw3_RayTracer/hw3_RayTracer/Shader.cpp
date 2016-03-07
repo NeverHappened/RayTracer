@@ -79,7 +79,12 @@ vec4 Shader::standardShadingFormula(Camera camera, Light light, Intersection int
 	else {
 		vec3 _light_direction = light.getPosition() - intersection.getPosition();
 		lightDirection = normalize(_light_direction);
-		attenuation = 1.0f / computeDistanceFromTo(intersection, light); // FIX THIS IF NEEDED (USE FUNCTION AND MAYBE DIFFERENT FORMULA (1/r^2)???)
+		float d = computeDistanceFromTo(intersection, light);
+		float constant = light.getAttenuation().x;
+		float linear = light.getAttenuation().y;
+		float quadratic = light.getAttenuation().z;
+		float attenuationFactor = constant + linear * d + quadratic * d * d;
+		attenuation = 1.0f / attenuationFactor;
 	}
 
 	vec3 eyeDirection = normalize(camera.getCenter() - camera.getEye());
@@ -95,5 +100,5 @@ vec4 Shader::standardShadingFormula(Camera camera, Light light, Intersection int
 	vec4 diffuse_part = obj->getDiffuse() * light.getColor() * diffuse_coeff;
 	vec4 specular_part = obj->getSpecular() * light.getColor() * specular_coeff; // phong illumination
 
-	return diffuse_part + specular_part;
+	return attenuation * (diffuse_part + specular_part);
 }

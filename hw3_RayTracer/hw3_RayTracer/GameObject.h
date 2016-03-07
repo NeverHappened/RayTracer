@@ -7,6 +7,7 @@ protected:
 	vec4 ambient;
 	vec4 diffuse;
 	vec4 specular;
+	vec4 emission;
 	float shininess;
 	mat4 transform;
 public:
@@ -15,6 +16,7 @@ public:
 	virtual vec4 getAmbient() const;
 	virtual vec4 getDiffuse() const;
 	virtual vec4 getSpecular() const;
+	virtual vec4 getEmission() const;
 	virtual float getShininess() const;
 	virtual mat4 getTransform() const;
 };
