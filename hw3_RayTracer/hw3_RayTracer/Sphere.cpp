@@ -34,10 +34,14 @@ double Sphere::withTransformations(Ray ray) {
 
 	// apply inverse transform to the original ray
 	vec4 origin_prime = inverse(M) * vec4(R.getStart(), 1.0);
-	vec4 direction_prime = inverse(M) * vec4(normalize(R.getDirection()), 1.0);
+	vec4 direction_prime = inverse(M) * vec4(normalize(R.getDirection()), 0.0);
 	Ray R_prime = Ray(vec3(origin_prime), vec3(direction_prime));
 	// compute intersection between original object and R'
 	float distance = (float)intersectionHelper(R_prime);
+
+	if (distance <= 0.0) {
+		return -1.0;
+	}
 	vec3 P_prime_star = R_prime.getStart() + R_prime.getDirection() * distance;
 	// find intersection point in the actual world
 	vec3 actual_world_point = vec3(M * vec4(P_prime_star, 1.0f));

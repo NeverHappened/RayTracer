@@ -88,9 +88,9 @@ WorldInit readfile(const char* filename)
 						float z = values[2];
 						float w = 0.0f;
 
-						float r = values[4];
-						float g = values[5];
-						float b = values[6];
+						float r = values[3];
+						float g = values[4];
+						float b = values[5];
 						float a = 1.0f;
 						vec4 position(x, y, z, w);
 						vec4 color(r, g, b, a);
@@ -106,9 +106,9 @@ WorldInit readfile(const char* filename)
 						float z = values[2];
 						float w = 1.0f;
 
-						float r = values[4];
-						float g = values[5];
-						float b = values[6];
+						float r = values[3];
+						float g = values[4];
+						float b = values[5];
 						float a = 1.0f;
 						vec4 position(x, y, z, w);
 						vec4 color(r, g, b, a);

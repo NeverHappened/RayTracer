@@ -8,9 +8,8 @@ ImageToRender::ImageToRender(Perspective perspective) : perspective(perspective)
 	pixels = new BYTE[pixelsSize];
 }
 
-ImageToRender::~ImageToRender() {
-	//delete[] pixels;
-}
+ImageToRender::~ImageToRender() 
+{}
 
 void ImageToRender::fill(PixelSample sample, RGB color) {
 	const int OFFSET = (sample.rowPixel() * perspective.getW() + sample.columnPixel()) * 3;
