@@ -35,8 +35,8 @@ Ray findRayForPixel(Camera camera, Perspective perspective, PixelSample sample) 
 	float widthCenter = perspective.getW() / 2.0f;
 	float heightCenter = perspective.getH() / 2.0f;
 
-	float normalizedXLocation = ((widthCenter - sample.getPixelXCenter()) / widthCenter);
-	float normalizedYLocation = ((sample.getPixelYCenter() - heightCenter) / heightCenter);
+	float normalizedXLocation = ((sample.getPixelXCenter() - widthCenter) / widthCenter);
+	float normalizedYLocation = ((heightCenter - sample.getPixelYCenter()) / heightCenter);
 
 	float alpha = tanX * normalizedXLocation;
 	float beta = tanY * normalizedYLocation;

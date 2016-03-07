@@ -20,7 +20,7 @@ double Sphere::intersectionDistance(Ray ray) {
 }
 
 vec3 Sphere::getNormal(vec3 point) { // in real coords
-	return vec3(inverse(getTransform()) * vec4((location - point), 0.0));
+	return vec3(inverse(getTransform()) * vec4((point - location), 0.0));
 }
 
 double vectorDistance(vec3 o) {

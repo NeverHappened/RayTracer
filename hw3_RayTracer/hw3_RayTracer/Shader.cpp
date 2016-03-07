@@ -50,11 +50,9 @@ double Shader::computeDistanceFromTo(Intersection intersection, Light light) {
 	return distance(lookToLightSource);
 }
 
-//double attenuate(RGB color, double distanceToLight); // TODO! // FOR NOW COMPUTE LIGHT WITHOUT ATTENUATION MODEL!
-
 RGB Shader::computeLightOnHit(Camera camera, Intersection intersection, Ray ray, vector<GameObject*> objects) {
 	GameObject* obj = intersection.getObject();
-	vec4 resultLight = obj->getAmbient(); //+ obj->getEmission(); // no support for emission for now
+	vec4 resultLight = obj->getAmbient() + obj->getEmission(); // no support for emission for now
 	
 	for (Light& light : lights) {
 //		if (!lightVisibleFromHere(intersection, light, objects)) {// TURN OFF SHADOWS FOR NOW
@@ -87,7 +85,7 @@ vec4 Shader::standardShadingFormula(Camera camera, Light light, Intersection int
 		attenuation = 1.0f / attenuationFactor;
 	}
 
-	vec3 eyeDirection = normalize(camera.getCenter() - camera.getEye());
+	vec3 eyeDirection = normalize(camera.getEye() - camera.getCenter());
 	vec3 half_angle = normalize(lightDirection + eyeDirection);
 	vec3 surfaceNormal = obj->getNormal(intersection.getPosition());
 
