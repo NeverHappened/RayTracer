@@ -54,7 +54,7 @@ WorldInit readfile(const char* filename)
 	vector<GameObject*> objects = vector<GameObject*>();
 	vector<Light> lights = vector<Light>();
 
-	vec3 *vertices = NULL; // array of vertices
+	vector<vec3> vertices = vector<vec3>();
 	int verticesCreated = 0;
 
 	string str, cmd;
@@ -242,7 +242,7 @@ WorldInit readfile(const char* filename)
 					validinput = readvals(s, 1, values);
 					if (validinput) {
 						int maxverts = values[0];
-						vertices = new vec3[maxverts];
+						vertices.reserve(maxverts);
 					}
 				}
 				else if (cmd == "maxvertnorms") {
@@ -258,7 +258,8 @@ WorldInit readfile(const char* filename)
 						float y = values[1];
 						float z = values[2];
 
-						vertices[verticesCreated++] = vec3(x, y, z);
+						vertices.push_back(vec3(x, y, z));
+						verticesCreated++;
 					}
 				}
 				else if (cmd == "vertexnormal") {
@@ -276,14 +277,15 @@ WorldInit readfile(const char* filename)
 					}
 				}
 				else if (cmd == "tri") {
-					validinput = readvals(s, 6, values);
+					validinput = readvals(s, 3, values);
 					if (validinput) {
 						int v1 = (int)values[0];// vertex indexes that form a triangle
 						int v2 = (int)values[1];
 						int v3 = (int)values[2];
 
 						// create Triangle(v1, v2, v3)
-						Triangle* triangle = new Triangle(vertices[v1], vertices[v2], vertices[v3], ambient, diffuse, specular, shininess, emission, transform);
+						Triangle* triangle = new Triangle(vertices.at(v1), vertices.at(v2), vertices.at(v3), 
+							ambient, diffuse, specular, shininess, emission, transfstack.top());
 						objects.push_back(triangle);
 					}
 				}

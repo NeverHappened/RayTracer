@@ -6,7 +6,12 @@ Intersection IntersectionHelper::findClosestIntersection(Ray ray, std::vector<Ga
 
 	for (GameObject* obj : objects) {
 		double distance = obj->intersectionDistance(ray);
-		if (minDistance == -1 && distance != -1) {
+
+		if (distance <= 0.0) {
+			continue;
+		}
+
+		if (minDistance <= 0.0) {
 			minDistance = distance;
 			closestIntersected = obj;
 		}
@@ -16,7 +21,7 @@ Intersection IntersectionHelper::findClosestIntersection(Ray ray, std::vector<Ga
 		}
 	}
 
-	if (minDistance == -1) {
+	if (minDistance <= 0.0) {
 		return Intersection(NULL, -1.0, vec3(0, 0, 0));
 	}
 	else {

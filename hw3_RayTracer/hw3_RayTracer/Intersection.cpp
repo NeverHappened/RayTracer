@@ -7,7 +7,7 @@ Intersection::~Intersection()
 {}
 
 bool Intersection::isIntersection() const {
-	return distance != -1.0;
+	return distance > 0.0;
 }
 
 vec3 Intersection::getPosition() const {
