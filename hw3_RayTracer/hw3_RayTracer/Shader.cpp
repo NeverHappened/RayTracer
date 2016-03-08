@@ -26,9 +26,10 @@ double distance(vec3 vect) {
 }
 
 bool Shader::lightVisibleFromHere(Intersection intersection, Light light, vector<GameObject*> objects) {
-
-	vec3 lookToLightSource = intersection.getPosition() - light.getPosition();
-	Ray rayToLightSource(intersection.getPosition(), normalize(lookToLightSource));
+	float epsilon = 0.005; // too big just to be sure
+	vec3 lookToLightSource = light.getPosition() - intersection.getPosition();
+	vec3 correctedStart = intersection.getPosition() + epsilon * normalize(lookToLightSource);
+	Ray rayToLightSource(correctedStart, normalize(lookToLightSource));
 
 	double distanceToLightSource = distance(lookToLightSource);
 	Intersection onThePathToLight = IntersectionHelper::findClosestIntersection(rayToLightSource, objects);
@@ -55,9 +56,10 @@ RGB Shader::computeLightOnHit(Camera camera, Intersection intersection, Ray ray,
 	vec4 resultLight = obj->getAmbient() + obj->getEmission(); // no support for emission for now
 	
 	for (Light& light : lights) {
-//		if (!lightVisibleFromHere(intersection, light, objects)) {// TURN OFF SHADOWS FOR NOW
-//			continue;
-//		}
+		//if (!lightVisibleFromHere(intersection, light, objects)) {// TURN OFF SHADOWS FOR NOW
+		//	continue;
+			//return RGB(255, 0, 0);
+		//}
 		
 		resultLight += standardShadingFormula(camera, light, intersection);
 	}
@@ -85,12 +87,12 @@ vec4 Shader::standardShadingFormula(Camera camera, Light light, Intersection int
 		attenuation = 1.0f / attenuationFactor;
 	}
 
-	vec3 eyeDirection = normalize(camera.getEye() - camera.getCenter());
-	vec3 half_angle = normalize(lightDirection + eyeDirection);
+	vec3 eyeDirection = normalize(camera.getEye() - intersection.getPosition());
+	vec3 halfAngle = normalize(lightDirection + eyeDirection);
 	vec3 surfaceNormal = obj->getNormal(intersection.getPosition());
 
 	float dotL = dot(surfaceNormal, lightDirection);
-	float dotH = dot(surfaceNormal, half_angle);
+	float dotH = dot(surfaceNormal, halfAngle);
 
 	float diffuse_coeff = max(0.0f, dotL);
 	float specular_coeff = pow(max(0.0f, dotH), obj->getShininess());
