@@ -34,6 +34,18 @@ bool readvals(stringstream &s, const int numvals, float* values)
 	return true;
 }
 
+bool readvals_str(stringstream &s, const int numvals, string* values)
+{
+	for (int i = 0; i < numvals; i++) {
+		s >> values[i];
+		if (s.fail()) {
+			cout << "Failed reading value " << i << " will skip\n";
+			return false;
+		}
+	}
+	return true;
+}
+
 WorldInit readfile(const char* filename)
 {
 	vec3 eyeinit(0.0, 0.0, 5.0);
@@ -56,6 +68,8 @@ WorldInit readfile(const char* filename)
 
 	vector<vec3> vertices = vector<vec3>();
 	int verticesCreated = 0;
+
+	string outputFile = "test_out.png";
 
 	string str, cmd;
 	ifstream in;
@@ -302,7 +316,13 @@ WorldInit readfile(const char* filename)
 						transfstack.pop();
 					}
 				}
-
+				else if (cmd == "output") {
+					string* out = new string[1];
+					validinput = readvals_str(s, 1, out);
+					if (validinput) {
+						outputFile = out[0];
+					}
+				}
 				else {
 					cerr << "Unknown Command: " << cmd << " Skipping \n";
 				}
@@ -324,5 +344,5 @@ WorldInit readfile(const char* filename)
 	float zFar = 99.0f;
 	Perspective perspective(w, h, fovy, fovx, zNear, zFar);
 
-	return WorldInit(camera, perspective, objects, lights, maxdepth);
+	return WorldInit(camera, perspective, objects, lights, maxdepth, outputFile);
 }

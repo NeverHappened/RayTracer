@@ -82,7 +82,8 @@ void rayTracer() {
 		countProgress(sample, image, perspective);
 	}
 
-	image.outputToFile("test_image.png");
+	string fileOutput = init.fileOutput;
+	image.outputToFile(fileOutput);
 }
 
 

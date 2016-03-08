@@ -16,8 +16,9 @@ public:
 	vector<GameObject*> objects;
 	vector<Light> lights;
 	int maxdepth;
+	string fileOutput;
 
-	class WorldInit(Camera camera, Perspective perspective, vector<GameObject*> objects, vector<Light> lights, int maxdepth) :
-		camera(camera), perspective(perspective), objects(objects), lights(lights), maxdepth(maxdepth)
+	class WorldInit(Camera camera, Perspective perspective, vector<GameObject*> objects, vector<Light> lights, int maxdepth, string fileOutput) :
+		camera(camera), perspective(perspective), objects(objects), lights(lights), maxdepth(maxdepth), fileOutput(fileOutput)
 	{}
 };
