@@ -74,9 +74,9 @@ void rayTracer() {
 		PixelSample sample = sampler.getSample();
 		int x = sample.rowPixel();
 		int y = sample.columnPixel();
-		Ray ray = findRayForPixel(camera, perspective, sample);
-		Intersection closestIntersection = IntersectionHelper::findClosestIntersection(ray, objects);
-		RGB color = shader.shade(camera, closestIntersection, ray, sample, objects);
+		Ray viewRay = findRayForPixel(camera, perspective, sample);
+		Intersection closestIntersection = IntersectionHelper::findClosestIntersection(viewRay, objects);
+		RGB color = RGB(shader.shade(camera, closestIntersection, viewRay, sample, objects));
 
 		image.fill(sample, color);
 		countProgress(sample, image, perspective);

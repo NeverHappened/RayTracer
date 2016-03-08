@@ -19,16 +19,18 @@ protected:
 	int maxReflectionDepth;
 
 private:
-	vec4 computeLightOnHit(Camera camera, Intersection intersection, Ray ray, vector<GameObject*> objects);
+	vec4 computeLightOnHit(Intersection intersection, Ray ray, vector<GameObject*> objects);
 	bool lightVisibleFromHere(Intersection intersection, Light light, vector<GameObject*> objects);
-	double computeDistanceFromTo(Intersection intersection, Light light);
-	vec4 standardShadingFormula(Camera camera, Light light, Intersection intersection);
-	vec4 computeReflections(int currentDepth);
+	float computeDistanceFromTo(Intersection intersection, Light light);
+	vec4 standardShadingFormula(Ray ray, Light light, Intersection intersection);
+	vec4 computeReflections(Camera camera, Intersection intersection, Ray viewRay, PixelSample sample, vector<GameObject*> objects, int currentDepth);
+	vec3 transformNormal(vec3 normal, mat4 transform);
+	Ray mirrorRay(Ray ray, Intersection intersection);
 
 public:
 	Shader(vector<Light> lights, int maxReflectionDepth);
 	~Shader();
 
 	void addLight(Light light);
-	RGB Shader::shade(Camera camera, Intersection intersection, Ray ray, PixelSample sample, vector<GameObject*> objects, int currentDepth = 0);
+	vec4 Shader::shade(Camera camera, Intersection intersection, Ray ray, PixelSample sample, vector<GameObject*> objects, int currentDepth = 0);
 };

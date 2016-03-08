@@ -10,37 +10,51 @@ void Shader::addLight(Light light) {
 	lights.push_back(light);
 }
 
-vec3 computeReflections(int currentDepth) {
-	
-}
-
-RGB Shader::shade(Camera camera, Intersection intersection, Ray ray, PixelSample sample, vector<GameObject*> objects, int currentDepth = 0) {
-	if (intersection.isIntersection()) {
-		if (currentDepth != maxReflectionDepth) {
-			vec4 reflection = computeReflections(currentDepth + 1);
-			return RGB(computeLightOnHit(camera, intersection, ray, objects) + reflection);
-		}
-		else {
-			return RGB(computeLightOnHit(camera, intersection, ray, objects));
-		}
-		
-	}
-	else {
-		return RGB(0, 0, 0);
-	}
-}
-
-double distance(vec3 vect) {
+float distance(vec3 vect) {
 	return sqrt(vect.x * vect.x +
 		vect.y * vect.y +
 		vect.z * vect.z);
 }
 
+vec3 correctPosition(vec3 initialPosition, vec3 directionOfCorrection, float epsilon = 0.005f) {
+	return initialPosition + epsilon * directionOfCorrection;
+}
+
+Ray Shader::mirrorRay(Ray viewRay, Intersection intersection) {
+	GameObject* obj = intersection.getObject();
+	vec3 d = viewRay.getDirection();
+	vec3 n = transformNormal(obj->getNormal(intersection.getPosition()), obj->getTransform());
+	vec3 r = normalize(d - 2.0f * dot(d, n) * n);
+
+	vec3 correctedStart = correctPosition(intersection.getPosition(), r);
+
+	Ray bounce = Ray(correctedStart, r);
+	return bounce;
+}
+
+vec4 Shader::computeReflections(Camera camera, Intersection intersection, Ray viewRay, PixelSample sample, vector<GameObject*> objects, int currentDepth) {
+	GameObject* obj = intersection.getObject();
+	Ray _mirrorRay = mirrorRay(viewRay, intersection);
+	Intersection bounceIntersection = IntersectionHelper::findClosestIntersection(_mirrorRay, objects);
+		
+	return obj->getSpecular() * shade(camera, bounceIntersection, _mirrorRay, sample, objects, currentDepth + 1);
+}
+
+vec4 Shader::shade(Camera camera, Intersection intersection, Ray ray, PixelSample sample, vector<GameObject*> objects, int currentDepth) {
+	if (intersection.isIntersection()) {
+		bool recurseFurther = currentDepth < maxReflectionDepth;
+		return computeLightOnHit(intersection, ray, objects) +
+			(recurseFurther ? computeReflections(camera, intersection, ray, sample, objects, currentDepth) : vec4(0, 0, 0, 1));
+		
+	}
+	else {
+		return vec4(0, 0, 0, 1);
+	}
+}
+
 bool Shader::lightVisibleFromHere(Intersection intersection, Light light, vector<GameObject*> objects) {
-	float epsilon = 0.005; // too big just to be sure
 	vec3 lookToLightSource = light.getPosition() - intersection.getPosition();
-	vec3 correctedStart = intersection.getPosition() + epsilon * normalize(lookToLightSource);
-	Ray rayToLightSource(correctedStart, normalize(lookToLightSource));
+	Ray rayToLightSource(correctPosition(intersection.getPosition(), lookToLightSource), normalize(lookToLightSource));
 
 	double distanceToLightSource = distance(lookToLightSource);
 	Intersection onThePathToLight = IntersectionHelper::findClosestIntersection(rayToLightSource, objects);
@@ -57,32 +71,36 @@ bool Shader::lightVisibleFromHere(Intersection intersection, Light light, vector
 }
 
 
-double Shader::computeDistanceFromTo(Intersection intersection, Light light) {
+float Shader::computeDistanceFromTo(Intersection intersection, Light light) {
 	vec3 lookToLightSource = light.getPosition() - intersection.getPosition();
 	return distance(lookToLightSource);
 }
 
-vec4 Shader::computeLightOnHit(Camera camera, Intersection intersection, Ray ray, vector<GameObject*> objects) {
+vec4 Shader::computeLightOnHit(Intersection intersection, Ray ray, vector<GameObject*> objects) {
 	GameObject* obj = intersection.getObject();
-	vec4 resultLight = obj->getAmbient() + obj->getEmission(); // no support for emission for now
+	vec4 resultLight = obj->getAmbient() + obj->getEmission();
 	
 	for (Light& light : lights) {
-		if (!lightVisibleFromHere(intersection, light, objects)) {// TURN OFF SHADOWS FOR NOW
+		if (!lightVisibleFromHere(intersection, light, objects)) {
 			continue;
 		}
 		
-		resultLight += standardShadingFormula(camera, light, intersection);
+		resultLight += standardShadingFormula(ray, light, intersection);
 	}
 	
 	return resultLight;
 }
 
-vec4 Shader::standardShadingFormula(Camera camera, Light light, Intersection intersection) {
+vec3 Shader::transformNormal(vec3 normal, mat4 transform) {
+	return normalize(vec3(transpose(inverse(transform)) * vec4(normalize(normal), 0.0)));
+}
+
+vec4 Shader::standardShadingFormula(Ray viewRay, Light light, Intersection intersection) {
 
 	GameObject* obj = intersection.getObject();
 
 	vec3 lightDirection;
-	double attenuation = 1.0f;
+	float attenuation = 1.0f;
 	if (light.isDirectional()) {
 		lightDirection = normalize(light.getPosition());
 	}
@@ -97,10 +115,10 @@ vec4 Shader::standardShadingFormula(Camera camera, Light light, Intersection int
 		attenuation = 1.0f / attenuationFactor;
 	}
 
-	vec3 eyeDirection = normalize(camera.getEye() - intersection.getPosition());
+	// initially its a camera position, but when its reflected - its a rays origin
+	vec3 eyeDirection = normalize(viewRay.getStart() - intersection.getPosition());
 	vec3 halfAngle = normalize(lightDirection + eyeDirection);
-	vec3 _surfaceNormal = normalize(obj->getNormal(intersection.getPosition())); // TODO!: convert to real coordinates!
-	vec3 surfaceNormal = normalize(vec3(transpose(inverse(obj->getTransform())) * vec4(_surfaceNormal, 0.0)));
+	vec3 surfaceNormal = transformNormal(obj->getNormal(intersection.getPosition()), obj->getTransform());
 
 	float dotL = dot(surfaceNormal, lightDirection);
 	float dotH = dot(surfaceNormal, halfAngle);

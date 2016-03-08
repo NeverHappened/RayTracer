@@ -241,14 +241,14 @@ WorldInit readfile(const char* filename)
 				else if (cmd == "maxverts") {
 					validinput = readvals(s, 1, values);
 					if (validinput) {
-						int maxverts = values[0];
+						int maxverts = (int)values[0];
 						vertices.reserve(maxverts);
 					}
 				}
 				else if (cmd == "maxvertnorms") {
 					validinput = readvals(s, 1, values);
 					if (validinput) {
-						int maxvertnorms = values[0];
+						int maxvertnorms = (int) values[0];
 					}
 				}
 				else if (cmd == "vertex") {
