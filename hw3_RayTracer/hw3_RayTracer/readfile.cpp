@@ -44,7 +44,7 @@ WorldInit readfile(const char* filename)
 
 	vec3 attenuation = vec3(1.0, 0.0, 0.0);
 
-	vec4 ambient(0.2, 0.2, 0.2, 1.0);
+	vec4 ambient(0.0, 0.0, 0.0, 1.0);
 	vec4 specular(0.0, 0.0, 0.0, 1.0);
 	vec4 diffuse(0.0, 0.0, 0.0, 1.0);
 	vec4 emission(0.0, 0.0, 0.0, 1.0);

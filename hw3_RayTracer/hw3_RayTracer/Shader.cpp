@@ -89,7 +89,8 @@ vec4 Shader::standardShadingFormula(Camera camera, Light light, Intersection int
 
 	vec3 eyeDirection = normalize(camera.getEye() - intersection.getPosition());
 	vec3 halfAngle = normalize(lightDirection + eyeDirection);
-	vec3 surfaceNormal = obj->getNormal(intersection.getPosition());
+	vec3 _surfaceNormal = normalize(obj->getNormal(intersection.getPosition())); // TODO!: convert to real coordinates!
+	vec3 surfaceNormal = normalize(vec3(transpose(inverse(obj->getTransform())) * vec4(_surfaceNormal, 0.0)));
 
 	float dotL = dot(surfaceNormal, lightDirection);
 	float dotH = dot(surfaceNormal, halfAngle);

@@ -16,9 +16,11 @@ Triangle::~Triangle()
 {}
 
 vec3 Triangle::getNormal(vec3 point) {
-	vec3 a = vec3(transformVertex(v2) - transformVertex(v1));
-	vec3 b = vec3(transformVertex(v3) - transformVertex(v1));
-	normal = normalize(cross(a, b));
+//	vec3 a = vec3(transformVertex(v2) - transformVertex(v1));
+//	vec3 b = vec3(transformVertex(v3) - transformVertex(v1));
+//	normal = normalize(cross(a, b));
+
+	normal = normalize(cross(v2 - v1, v3 - v1));
 	return normal;
 }
 
