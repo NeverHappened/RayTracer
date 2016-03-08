@@ -16,10 +16,6 @@ Triangle::~Triangle()
 {}
 
 vec3 Triangle::getNormal(vec3 point) {
-//	vec3 a = vec3(transformVertex(v2) - transformVertex(v1));
-//	vec3 b = vec3(transformVertex(v3) - transformVertex(v1));
-//	normal = normalize(cross(a, b));
-
 	normal = normalize(cross(v2 - v1, v3 - v1));
 	return normal;
 }
@@ -53,9 +49,6 @@ double Triangle::intersectionDistance(Ray ray) {
 	float Bpw = dot(-Bpnormal, A);
 	float b = dot(Bpnormal, P) + Bpw;
 
-	//vec3 Cpnormal = cross(N, AB) / dot(cross(N, AB), BC);
-	//float Cpw = dot(-Cpnormal, B);
-	//float c = dot(Cpnormal, P) + Cpw;
 	float c = 1 - a - b; // optimize, because a + b + c == 1
 
 	if (a >= 0 && b >= 0 && c >= 0) {

@@ -19,17 +19,7 @@ double Sphere::intersectionDistance(Ray ray) {
 	return dist > 0.01 ? dist : -1.0;
 }
 
-vec3 Sphere::getNormal(vec3 point) { // in real coords // location in old coordinates, point in new - so we need to convert point
-	//vec3 locationRealCoords = vec3(getTransform() * vec4(location, 1.0));
-	//return normalize(point - locationRealCoords);
-
-	// second try
-	//mat4 M = getTransform();
-	//vec3 pointNotTransformed = vec3(inverse(M) * vec4(point, 1.0));
-	//vec3 locationNotTransformed = location;
-	//vec3 normalNotTransformed = normalize(pointNotTransformed - locationNotTransformed);
-	//vec3 normalTransformed = 
-
+vec3 Sphere::getNormal(vec3 point) { // point is already transformed (real coordinates)
 	vec3 notTransformedPoint = vec3(inverse(getTransform()) * vec4(point, 1.0));
 	return normalize(notTransformedPoint - location);
 }

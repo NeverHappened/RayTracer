@@ -67,7 +67,8 @@ void rayTracer() {
 	Sampler sampler(perspective.getW(), perspective.getH());
 	ImageToRender image(perspective);
 	vector<Light> lights = init.lights;
-	Shader shader = Shader(lights);
+	int maxReflectionDepth = init.maxdepth;
+	Shader shader = Shader(lights, maxReflectionDepth);
 
 	while (sampler.anySamples()) {
 		PixelSample sample = sampler.getSample();

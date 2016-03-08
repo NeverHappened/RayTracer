@@ -1,6 +1,6 @@
 #include "Shader.h"
 
-Shader::Shader(vector<Light> lights) : lights(lights)
+Shader::Shader(vector<Light> lights, int maxReflectionDepth) : lights(lights), maxReflectionDepth(maxReflectionDepth)
 {}
 
 Shader::~Shader()
@@ -10,9 +10,20 @@ void Shader::addLight(Light light) {
 	lights.push_back(light);
 }
 
-RGB Shader::shade(Camera camera, Intersection intersection, Ray ray, PixelSample sample, vector<GameObject*> objects) {
+vec3 computeReflections(int currentDepth) {
+	
+}
+
+RGB Shader::shade(Camera camera, Intersection intersection, Ray ray, PixelSample sample, vector<GameObject*> objects, int currentDepth = 0) {
 	if (intersection.isIntersection()) {
-		return computeLightOnHit(camera, intersection, ray, objects);
+		if (currentDepth != maxReflectionDepth) {
+			vec4 reflection = computeReflections(currentDepth + 1);
+			return RGB(computeLightOnHit(camera, intersection, ray, objects) + reflection);
+		}
+		else {
+			return RGB(computeLightOnHit(camera, intersection, ray, objects));
+		}
+		
 	}
 	else {
 		return RGB(0, 0, 0);
@@ -51,20 +62,19 @@ double Shader::computeDistanceFromTo(Intersection intersection, Light light) {
 	return distance(lookToLightSource);
 }
 
-RGB Shader::computeLightOnHit(Camera camera, Intersection intersection, Ray ray, vector<GameObject*> objects) {
+vec4 Shader::computeLightOnHit(Camera camera, Intersection intersection, Ray ray, vector<GameObject*> objects) {
 	GameObject* obj = intersection.getObject();
 	vec4 resultLight = obj->getAmbient() + obj->getEmission(); // no support for emission for now
 	
 	for (Light& light : lights) {
-		//if (!lightVisibleFromHere(intersection, light, objects)) {// TURN OFF SHADOWS FOR NOW
-		//	continue;
-			//return RGB(255, 0, 0);
-		//}
+		if (!lightVisibleFromHere(intersection, light, objects)) {// TURN OFF SHADOWS FOR NOW
+			continue;
+		}
 		
 		resultLight += standardShadingFormula(camera, light, intersection);
 	}
 	
-	return RGB(resultLight);
+	return resultLight;
 }
 
 vec4 Shader::standardShadingFormula(Camera camera, Light light, Intersection intersection) {
