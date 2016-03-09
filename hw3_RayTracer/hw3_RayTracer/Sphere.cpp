@@ -16,7 +16,7 @@ Sphere::~Sphere()
 
 double Sphere::intersectionDistance(Ray ray) {
 	double dist = withTransformations(ray);
-	return dist > 0.01 ? dist : -1.0;
+	return dist > 0.0 ? dist : -1.0;
 }
 
 vec3 Sphere::getNormal(vec3 point) { // point is already transformed (real coordinates)

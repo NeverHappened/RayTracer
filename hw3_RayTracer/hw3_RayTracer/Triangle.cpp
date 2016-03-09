@@ -28,7 +28,7 @@ double Triangle::intersectionDistance(Ray ray) {
 	vec3 A = transformVertex(v1);
 	vec3 B = transformVertex(v2);
 	vec3 C = transformVertex(v3);
-	vec3 N = getNormal(vec3(0, 0, 0));
+	vec3 N = normalize(vec3(transpose(inverse(transform)) * vec4(normalize(normal), 0.0)));
 
 	vec3 P0 = ray.getStart();
 	vec3 P1 = ray.getDirection();

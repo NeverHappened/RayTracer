@@ -16,7 +16,7 @@ float distance(vec3 vect) {
 		vect.z * vect.z);
 }
 
-vec3 correctPosition(vec3 initialPosition, vec3 directionOfCorrection, float epsilon = 0.005f) {
+vec3 correctPosition(vec3 initialPosition, vec3 directionOfCorrection, float epsilon = 0.0001f) {
 	return initialPosition + epsilon * directionOfCorrection;
 }
 
@@ -41,6 +41,8 @@ vec4 Shader::computeReflections(Camera camera, Intersection intersection, Ray vi
 }
 
 vec4 Shader::shade(Camera camera, Intersection intersection, Ray ray, PixelSample sample, vector<GameObject*> objects, int currentDepth) {
+	int x = sample.rowPixel();
+	int y = sample.columnPixel();
 	if (intersection.isIntersection()) {
 		bool recurseFurther = currentDepth < maxReflectionDepth;
 		return computeLightOnHit(intersection, ray, objects) +
@@ -58,11 +60,17 @@ bool Shader::lightVisibleFromHere(Intersection intersection, Light light, vector
 
 	double distanceToLightSource = distance(lookToLightSource);
 	Intersection onThePathToLight = IntersectionHelper::findClosestIntersection(rayToLightSource, objects);
+	double distanceToClosestObject = -1.0;
+	if (onThePathToLight.isIntersection()) {
+		vec3 o1 = intersection.getPosition();
+		vec3 o2 = onThePathToLight.getPosition();
+		distanceToClosestObject = distance(o1 - o2);
+	}
 
 	if (!onThePathToLight.isIntersection()) {
 		return true;
 	}
-	else if (onThePathToLight.getDistance() > distanceToLightSource) {
+	else if (distanceToClosestObject > distanceToLightSource) {
 		return true;
 	}
 	else {
