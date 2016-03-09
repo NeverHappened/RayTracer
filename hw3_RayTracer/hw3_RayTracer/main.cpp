@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
+#include <chrono>
+#include <ctime>
 
 #include "readfile.h"
 #include "GameObject.h"
@@ -46,14 +48,27 @@ Ray findRayForPixel(Camera camera, Perspective perspective, PixelSample sample) 
 	return Ray(rayStart, rayDirection);
 }
 
-void countProgress(PixelSample sample, ImageToRender image, Perspective perspective) {
+void countProgress(PixelSample sample, ImageToRender image, Perspective perspective, 
+	std::chrono::time_point<std::chrono::system_clock> start) {
 	static int reached = -1;
+	static bool onepercentmessage = false;
 
 	int pixelsProcessed = (sample.rowPixel() + 1) * perspective.getW() + (sample.columnPixel() + 1);
 	int percent = (int) floor((pixelsProcessed / (double)image.getTotalPixels()) * 100);
 	if (percent / 10 != reached && percent % 10 == 0) {
 		reached += 1;
-		cout << percent << " % of pixels processed." << endl;
+		cout << percent << " % complete." << endl;
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		cout << "It took about " << (elapsed_seconds.count() / 60) << " minutes." << endl;
+	}
+
+	if (percent >= 1.0 && percent < 2.0 && !onepercentmessage) {
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		cout << "About 1 % rendered." << endl;
+		cout << "It took about " << elapsed_seconds.count() << " seconds." << endl;
+		onepercentmessage = true;
 	}
 }
 
@@ -70,6 +85,8 @@ void rayTracer() {
 	int maxReflectionDepth = init.maxdepth;
 	Shader shader = Shader(lights, maxReflectionDepth);
 
+	cout << "Start rendering..." << endl;
+	auto start = std::chrono::system_clock::now();
 	while (sampler.anySamples()) {
 		PixelSample sample = sampler.getSample();
 		int x = sample.rowPixel();
@@ -79,7 +96,7 @@ void rayTracer() {
 		RGB color = RGB(shader.shade(camera, closestIntersection, viewRay, sample, objects));
 
 		image.fill(sample, color);
-		countProgress(sample, image, perspective);
+		countProgress(sample, image, perspective, start);
 	}
 
 	string fileOutput = init.fileOutput;
