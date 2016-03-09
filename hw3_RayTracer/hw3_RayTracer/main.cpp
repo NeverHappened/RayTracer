@@ -61,6 +61,7 @@ void countProgress(PixelSample sample, ImageToRender image, Perspective perspect
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 		cout << "It took about " << (elapsed_seconds.count() / 60) << " minutes." << endl;
+		cout << "Estimated completion time: " << (((elapsed_seconds.count() / 60) * 100) / (float)percent) << " minutes." << endl;
 	}
 
 	if (percent >= 1.0 && percent < 2.0 && !onepercentmessage) {
@@ -68,6 +69,7 @@ void countProgress(PixelSample sample, ImageToRender image, Perspective perspect
 		std::chrono::duration<double> elapsed_seconds = end - start;
 		cout << "About 1 % rendered." << endl;
 		cout << "It took about " << elapsed_seconds.count() << " seconds." << endl;
+		cout << "Estimated completion time: " << (elapsed_seconds.count() * 100) / 60 << " minutes." << endl;
 		onepercentmessage = true;
 	}
 }
